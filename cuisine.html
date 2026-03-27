@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7DS Database - Cuisine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/site.js"></script>
     <style>
         /* ── Recherche ───────────────────────────────────────────── */
         .cuisine-search-bar {
@@ -191,23 +195,23 @@
             <li><a href="index.html?section=home">Accueil</a></li>
             <li><a href="index.html?section=characters">Personnages</a></li>
             <li><a href="index.html?section=monsters">Monstres</a></li>
-            <li><a href="index.html?section=pvp">PvP</a></li>
-            <li><a href="index.html?section=loot">Loot</a></li>
-            <li><a href="passifs.html">Passifs</a></li>
-            <li><a href="capture.html">Capture</a></li>
-            <li><a href="cuisine.html" class="active">Cuisine</a></li>
-            <li><a href="map.html">Carte</a></li>
+            <li><a href="index.html?section=pvp"  data-i18n="ui.nav.pvp">PvP</a></li>
+            <li><a href="index.html?section=loot" data-i18n="ui.nav.loot">Loot</a></li>
+            <li><a href="passifs.html" data-i18n="ui.nav.passives">Passifs</a></li>
+            <li><a href="capture.html" data-i18n="ui.nav.capture">Capture</a></li>
+            <li><a href="cuisine.html" class="active" data-i18n="ui.nav.cooking">Cuisine</a></li>
+            <li><a href="map.html"     data-i18n="ui.nav.map">Carte</a></li>
         </ul>
     </nav>
 
     <main>
         <section class="section active" style="display:block;">
-            <h2>Recettes de Cuisine</h2>
+            <h2 data-i18n="ui.cuisine.title">Recettes de Cuisine</h2>
 
             <!-- Barre de recherche -->
             <div class="cuisine-search-bar filters">
-                <input type="text" id="search-recipe"
-                    placeholder="Rechercher par plat, ingrédient ou amélioration...">
+                <input type="text" id="search-recipe" data-i18n="ui.cuisine.search"
+                    placeholder="Recette, ingrédient ou amélioration…">
             </div>
 
             <!-- Zone de résultats de recherche -->
@@ -238,54 +242,54 @@
 
         // ── Taxonomie complète ───────────────────────────────────
         const CATS = [
-            { id: 'hp',    label: '❤️ Soin PV',  cls: 'cat-tab-hp' },
-            { id: 'atk',   label: '⚔️ ATK',       cls: 'cat-tab-atk' },
-            { id: 'def',   label: '🛡️ DEF',        cls: 'cat-tab-def' },
-            { id: 'world', label: '🌍 Monde',      cls: 'cat-tab-world' },
-            { id: 'other', label: '✨ Autre',      cls: 'cat-tab-other' },
+            { id: 'hp',    label: 'Soin PV',  cls: 'cat-tab-hp' },
+            { id: 'atk',   label: 'Attaque',  cls: 'cat-tab-atk' },
+            { id: 'def',   label: 'Défense',  cls: 'cat-tab-def' },
+            { id: 'world', label: 'Monde',    cls: 'cat-tab-world' },
+            { id: 'other', label: 'Autre',    cls: 'cat-tab-other' },
         ];
 
         // effect_key (après strip) → {cat, order, icon, label}
         const SUB_MAP = {
             // HP
-            'hp':        { cat: 'hp', order: 0, icon: '❤️', label: 'Soin simple' },
-            'hp2':       { cat: 'hp', order: 1, icon: '❤️', label: 'Soin + effet Ventre plein' },
-            'hp_stun':   { cat: 'hp', order: 2, icon: '💫', label: '+ Étourdissement' },
+            'hp':        { cat: 'hp', order: 0, icon: '', label: 'Soin simple' },
+            'hp2':       { cat: 'hp', order: 1, icon: '', label: 'Soin + effet Ventre plein' },
+            'hp_stun':   { cat: 'hp', order: 2, icon: '', label: '+ Étourdissement' },
             // ATK
-            'atk':          { cat: 'atk', order: 0, icon: '⚔️', label: 'Général' },
-            'atkcri':        { cat: 'atk', order: 1, icon: '🎯', label: '+ Critique' },
-            'atk_stun':      { cat: 'atk', order: 2, icon: '💫', label: '+ Étourdissement' },
-            'atk_swim':      { cat: 'atk', order: 3, icon: '🏊', label: '+ Endurance nage' },
-            'atk_swimsp':    { cat: 'atk', order: 4, icon: '🏊', label: '+ Vitesse nage' },
-            'atk_wind':      { cat: 'atk', order: 5, icon: '💨', label: 'Vent' },
-            'atk_thunder':   { cat: 'atk', order: 6, icon: '⚡', label: 'Foudre' },
-            'atk_earth':     { cat: 'atk', order: 7, icon: '🌿', label: 'Terre' },
-            'atk_ice':       { cat: 'atk', order: 8, icon: '❄️', label: 'Glace' },
-            'atk_dark':      { cat: 'atk', order: 9,  icon: '🌑', label: 'Ténèbres' },
-            'hp_fire':       { cat: 'atk', order: 10, icon: '🔥', label: 'Feu' },
-            'hp_wind':       { cat: 'atk', order: 11, icon: '💨', label: 'Vent' },
-            'hp_holy':       { cat: 'atk', order: 12, icon: '✨', label: 'Sacré' },
+            'atk':          { cat: 'atk', order: 0, icon: '', label: 'Général' },
+            'atkcri':        { cat: 'atk', order: 1, icon: '', label: '+ Critique' },
+            'atk_stun':      { cat: 'atk', order: 2, icon: '', label: '+ Étourdissement' },
+            'atk_swim':      { cat: 'atk', order: 3, icon: '', label: '+ Endurance nage' },
+            'atk_swimsp':    { cat: 'atk', order: 4, icon: '', label: '+ Vitesse nage' },
+            'atk_wind':      { cat: 'atk', order: 5, icon: '', label: 'Vent' },
+            'atk_thunder':   { cat: 'atk', order: 6, icon: '', label: 'Foudre' },
+            'atk_earth':     { cat: 'atk', order: 7, icon: '', label: 'Terre' },
+            'atk_ice':       { cat: 'atk', order: 8, icon: '', label: 'Glace' },
+            'atk_dark':      { cat: 'atk', order: 9,  icon: '', label: 'Ténèbres' },
+            'hp_fire':       { cat: 'atk', order: 10, icon: '', label: 'Feu' },
+            'hp_wind':       { cat: 'atk', order: 11, icon: '', label: 'Vent' },
+            'hp_holy':       { cat: 'atk', order: 12, icon: '', label: 'Sacré' },
             // DEF
-            'def':       { cat: 'def', order: 0, icon: '🛡️', label: 'Général' },
-            'def_cri':   { cat: 'def', order: 1, icon: '🎯', label: '+ Résistance Critique' },
-            'def_stun':  { cat: 'def', order: 2, icon: '💫', label: '+ Étourdissement' },
-            'def_fire':  { cat: 'def', order: 3, icon: '🔥', label: 'Feu' },
-            'def_holy':  { cat: 'def', order: 4, icon: '✨', label: 'Sacré' },
+            'def':       { cat: 'def', order: 0, icon: '', label: 'Général' },
+            'def_cri':   { cat: 'def', order: 1, icon: '', label: '+ Résistance Critique' },
+            'def_stun':  { cat: 'def', order: 2, icon: '', label: '+ Étourdissement' },
+            'def_fire':  { cat: 'def', order: 3, icon: '', label: 'Feu' },
+            'def_holy':  { cat: 'def', order: 4, icon: '', label: 'Sacré' },
             // Monde
-            'world_fly':          { cat: 'world', order: 0,  icon: '🦅', label: 'Vol' },
-            'world_flyswim':      { cat: 'world', order: 1,  icon: '🦅', label: 'Vol + Nage' },
-            'world_flygliding':   { cat: 'world', order: 2,  icon: '🦅', label: 'Vol + Vol plané' },
-            'world_gliding':      { cat: 'world', order: 3,  icon: '🪂', label: 'Vol plané – Endurance' },
-            'world_gliding_sp':   { cat: 'world', order: 4,  icon: '🪂', label: 'Vol plané – Vitesse' },
-            'world_gliding_sp_stun': { cat: 'world', order: 5, icon: '🪂', label: 'Vol plané – Vitesse + Stun' },
-            'world_glidingswim':  { cat: 'world', order: 6,  icon: '🪂', label: 'Vol plané + Nage' },
-            'world_glidingswim2': { cat: 'world', order: 7,  icon: '🪂', label: 'Vol plané + Nage (amélioré)' },
-            'world_swim':         { cat: 'world', order: 8,  icon: '🏊', label: 'Nage – Endurance' },
-            'world_swim_sp':      { cat: 'world', order: 9,  icon: '🏊', label: 'Nage – Vitesse' },
-            'world_swim_stun':    { cat: 'world', order: 10, icon: '🏊', label: 'Nage + Stun' },
-            'world_underwater_sp':{ cat: 'world', order: 11, icon: '🤿', label: 'Plongée – Vitesse' },
-            'weather_hot':        { cat: 'world', order: 12, icon: '🧊', label: 'Température – Chaleur' },
-            'weather_cold':       { cat: 'world', order: 13, icon: '🔥', label: 'Température – Froid' },
+            'world_fly':          { cat: 'world', order: 0,  icon: '', label: 'Vol' },
+            'world_flyswim':      { cat: 'world', order: 1,  icon: '', label: 'Vol + Nage' },
+            'world_flygliding':   { cat: 'world', order: 2,  icon: '', label: 'Vol + Vol plané' },
+            'world_gliding':      { cat: 'world', order: 3,  icon: '', label: 'Vol plané – Endurance' },
+            'world_gliding_sp':   { cat: 'world', order: 4,  icon: '', label: 'Vol plané – Vitesse' },
+            'world_gliding_sp_stun': { cat: 'world', order: 5, icon: '', label: 'Vol plané – Vitesse + Stun' },
+            'world_glidingswim':  { cat: 'world', order: 6,  icon: '', label: 'Vol plané + Nage' },
+            'world_glidingswim2': { cat: 'world', order: 7,  icon: '', label: 'Vol plané + Nage (amélioré)' },
+            'world_swim':         { cat: 'world', order: 8,  icon: '', label: 'Nage – Endurance' },
+            'world_swim_sp':      { cat: 'world', order: 9,  icon: '', label: 'Nage – Vitesse' },
+            'world_swim_stun':    { cat: 'world', order: 10, icon: '', label: 'Nage + Stun' },
+            'world_underwater_sp':{ cat: 'world', order: 11, icon: '', label: 'Plongée – Vitesse' },
+            'weather_hot':        { cat: 'world', order: 12, icon: '', label: 'Température – Chaleur' },
+            'weather_cold':       { cat: 'world', order: 13, icon: '', label: 'Température – Froid' },
         };
 
         const GRADE_ORDER = { grade1: 0, grade2: 1, grade3: 2, grade4: 3 };
@@ -300,6 +304,25 @@
             return img;
         }
 
+        // ── Helpers i18n ─────────────────────────────────────────
+        function t(key, fallback) {
+            if (!window.LANG_PACK) return fallback;
+            const keys = ('ui.cuisine.' + key).split('.');
+            let v = window.LANG_PACK;
+            for (const k of keys) v = v && v[k];
+            return typeof v === 'string' ? v : fallback;
+        }
+        function dishName(r)   { return (window.LANG_PACK && LANG_PACK.dishes[r.dish_id])      || r.name; }
+        function dishEffect(r) { return (window.LANG_PACK && LANG_PACK.effects[r.dish_id])     || r.effect; }
+        function ingName(ing)  { return (window.LANG_PACK && LANG_PACK.ingredients[ing.id])    || ing.name; }
+        function subLabel(key) {
+            const ui_key = 'sub_' + key;
+            return t(ui_key, SUB_MAP[key] ? SUB_MAP[key].label : key);
+        }
+        function catLabel(id) {
+            return t('cat_' + id, CATS.find(c => c.id === id)?.label || id);
+        }
+
         // ── Construire ligne de tableau ──────────────────────────
         function buildRow(r) {
             const tr = document.createElement('tr');
@@ -311,7 +334,7 @@
             wrap.appendChild(imgEl(r.dish_id, 'dish-icon-sm'));
             const nameEl = document.createElement('span');
             nameEl.className = 'dish-name-sm';
-            nameEl.textContent = r.name;
+            nameEl.textContent = dishName(r);
             wrap.appendChild(nameEl);
             tdDish.appendChild(wrap);
             tr.appendChild(tdDish);
@@ -327,7 +350,7 @@
             // Effet
             const tdEff = document.createElement('td');
             tdEff.className = 'cell-effect';
-            const lines = (r.effect || '').split('\n').filter(l => l.trim());
+            const lines = (dishEffect(r) || '').split('\n').filter(l => l.trim());
             if (lines.length > 0) {
                 const main = document.createElement('div');
                 main.className = 'eff-main';
@@ -349,10 +372,11 @@
             for (const ing of r.ingredients) {
                 const chip = document.createElement('div');
                 chip.className = 'ing-chip';
-                chip.title = ing.name;
+                const nm_str = ingName(ing);
+                chip.title = nm_str;
                 chip.appendChild(imgEl(ing.id, 'ing-icon'));
                 const nm = document.createElement('span');
-                nm.textContent = ing.name;
+                nm.textContent = nm_str;
                 chip.appendChild(nm);
                 if (ing.qty > 1) {
                     const qty = document.createElement('span');
@@ -372,7 +396,7 @@
             const table = document.createElement('table');
             table.className = 'recipe-table';
             const thead = document.createElement('thead');
-            thead.innerHTML = '<tr><th>Plat</th><th>Grade</th><th>Amélioration</th><th>Ingrédients</th></tr>';
+            thead.innerHTML = '<tr><th>' + t('col_dish','Plat') + '</th><th>' + t('col_grade','Grade') + '</th><th>' + t('col_effect','Amélioration') + '</th><th>' + t('col_ingredients','Ingrédients') + '</th></tr>';
             table.appendChild(thead);
             const tbody = document.createElement('tbody');
             const sorted = [...recipes].sort((a, b) =>
@@ -391,9 +415,9 @@
             const header = document.createElement('div');
             header.className = 'sub-group-header';
             header.innerHTML =
-                '<span class="sub-icon">' + meta.icon + '</span>' +
-                '<span class="sub-label">' + meta.label + '</span>' +
-                '<span class="sub-count">' + recipes.length + ' recette' + (recipes.length > 1 ? 's' : '') + '</span>' +
+                (meta.icon ? '<span class="sub-icon">' + meta.icon + '</span>' : '') +
+                '<span class="sub-label">' + subLabel(subKey) + '</span>' +
+                '<span class="sub-count">' + recipes.length + '</span>' +
                 '<span class="chevron">▶</span>';
             header.addEventListener('click', () => group.classList.toggle('open'));
             group.appendChild(header);
@@ -409,25 +433,18 @@
         // ── Construire contenu d'un onglet catégorie ──────────────
         function buildCatContent(catId, recipes) {
             const div = document.createElement('div');
-
-            // Grouper par sous-catégorie (effect_key)
             const groups = {};
             for (const r of recipes) {
                 const k = r.effect_key || 'other';
                 if (!groups[k]) groups[k] = [];
                 groups[k].push(r);
             }
-
-            // Trier les sous-groupes selon SUB_MAP.order
             const sortedKeys = Object.keys(groups).sort((a, b) => {
                 const oa = SUB_MAP[a] ? SUB_MAP[a].order : 99;
                 const ob = SUB_MAP[b] ? SUB_MAP[b].order : 99;
                 return oa - ob;
             });
-
-            for (const k of sortedKeys) {
-                div.appendChild(buildSubGroup(k, groups[k]));
-            }
+            for (const k of sortedKeys) div.appendChild(buildSubGroup(k, groups[k]));
             return div;
         }
 
@@ -435,8 +452,9 @@
         function buildTree() {
             const tabsEl = document.getElementById('cat-tabs');
             const contentEl = document.getElementById('cat-content');
+            tabsEl.innerHTML = '';
+            contentEl.innerHTML = '';
 
-            // Grouper par catégorie principale
             const byCat = {};
             for (const r of COOKING_RECIPES) {
                 const c = r.effect_cat || 'other';
@@ -452,7 +470,7 @@
                 const tab = document.createElement('button');
                 tab.className = 'cat-tab ' + cat.cls;
                 tab.dataset.cat = cat.id;
-                tab.innerHTML = cat.label + ' <span class="tab-count">(' + recipes.length + ')</span>';
+                tab.innerHTML = catLabel(cat.id) + ' <span class="tab-count">(' + recipes.length + ')</span>';
                 tabsEl.appendChild(tab);
 
                 const panel = document.createElement('div');
@@ -463,7 +481,7 @@
                 contentEl.appendChild(panel);
 
                 tab.addEventListener('click', () => {
-                    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.cat-tab').forEach(t2 => t2.classList.remove('active'));
                     document.querySelectorAll('.cat-panel').forEach(p => p.style.display = 'none');
                     tab.classList.add('active');
                     panel.style.display = 'block';
@@ -488,11 +506,12 @@
             treeMode.style.display = 'none';
             searchMode.style.display = 'block';
 
-            const matches = COOKING_RECIPES.filter(r =>
-                r.name.toLowerCase().includes(q) ||
-                r.effect.toLowerCase().includes(q) ||
-                r.ingredients.some(i => i.name.toLowerCase().includes(q))
-            );
+            const matches = COOKING_RECIPES.filter(r => {
+                const name   = dishName(r).toLowerCase();
+                const effect = dishEffect(r).toLowerCase();
+                const ings   = r.ingredients.some(i => ingName(i).toLowerCase().includes(q));
+                return name.includes(q) || effect.includes(q) || ings;
+            });
 
             document.getElementById('search-count').textContent = matches.length;
             const wrap = document.getElementById('search-table-wrap');
@@ -500,8 +519,14 @@
             wrap.appendChild(buildTable(matches));
         }
 
-        // ── Init ──────────────────────────────────────────────────
+        // ── Init + re-render au changement de langue ──────────────
         buildTree();
+
+        document.addEventListener('langchange', () => {
+            buildTree();
+            const searchEl = document.getElementById('search-recipe');
+            if (searchEl.value) doSearch(searchEl.value);
+        });
 
         const searchEl = document.getElementById('search-recipe');
         searchEl.addEventListener('input', () => doSearch(searchEl.value));
@@ -509,3 +534,4 @@
     </script>
 </body>
 </html>
+

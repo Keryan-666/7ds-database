@@ -83,11 +83,6 @@ function initNavigation() {
 // Home section
 function renderHome() {
     const meta = GameDB.meta;
-    document.getElementById('total-characters').textContent = meta.total_characters;
-    document.getElementById('total-costumes').textContent = meta.total_costumes;
-    document.getElementById('total-weapons').textContent = meta.weapon_types.length;
-    document.getElementById('total-elements').textContent = meta.elements.length;
-    document.getElementById('total-monsters').textContent = meta.total_monsters;
 
     const sinsList = document.getElementById('sins-list');
     if (sinsList) {

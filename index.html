@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7DS Database - Seven Deadly Sins Game Data</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/site.js"></script>
 </head>
 <body>
     <header>
@@ -16,15 +20,15 @@
 
     <nav>
         <ul>
-            <li><a href="#" data-section="home">Accueil</a></li>
-            <li><a href="#" data-section="characters">Personnages</a></li>
-            <li><a href="#" data-section="monsters">Monstres</a></li>
-            <li><a href="#" data-section="pvp">PvP</a></li>
-            <li><a href="#" data-section="loot">Loot</a></li>
-            <li><a href="passifs.html">Passifs</a></li>
-            <li><a href="capture.html">Capture</a></li>
-            <li><a href="cuisine.html">Cuisine</a></li>
-            <li><a href="map.html">Carte</a></li>
+            <li><a href="#" data-section="home"       data-i18n="ui.nav.home">Accueil</a></li>
+            <li><a href="#" data-section="characters" data-i18n="ui.nav.characters">Personnages</a></li>
+            <li><a href="#" data-section="monsters"   data-i18n="ui.nav.monsters">Monstres</a></li>
+            <li><a href="#" data-section="pvp"        data-i18n="ui.nav.pvp">PvP</a></li>
+            <li><a href="#" data-section="loot"       data-i18n="ui.nav.loot">Loot</a></li>
+            <li><a href="passifs.html" data-i18n="ui.nav.passives">Passifs</a></li>
+            <li><a href="capture.html" data-i18n="ui.nav.capture">Capture</a></li>
+            <li><a href="cuisine.html" data-i18n="ui.nav.cooking">Cuisine</a></li>
+            <li><a href="map.html"     data-i18n="ui.nav.map">Carte</a></li>
         </ul>
     </nav>
 
@@ -32,28 +36,61 @@
         <!-- Section Accueil -->
         <section id="home" class="section">
             <h2>Bienvenue sur 7DS Database</h2>
-            <div class="stats-overview">
-                <div class="stat-card">
-                    <span class="stat-number" id="total-characters">0</span>
-                    <span class="stat-label">Personnages</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="total-costumes">0</span>
-                    <span class="stat-label">Costumes</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="total-weapons">0</span>
-                    <span class="stat-label">Types d'armes</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="total-elements">0</span>
-                    <span class="stat-label">Elements</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="total-monsters">0</span>
-                    <span class="stat-label">Monstres</span>
-                </div>
+            <div class="nav-grid">
+                <a href="#" data-section="characters" class="nav-card">
+                    <div class="nav-icon"><img src="data/portraits/Combine_meliodas_001.png" alt="Personnages"></div>
+                    <div class="nav-title">Personnages</div>
+                    <div class="nav-desc">Héros et armes</div>
+                </a>
+                <a href="#" data-section="monsters" class="nav-card">
+                    <div class="nav-icon"><img src="data/monster_icons/mon_boss_demon_red_0001.png" alt="Monstres"></div>
+                    <div class="nav-title">Monstres</div>
+                    <div class="nav-desc">Bestiaire et IA</div>
+                </a>
+                <a href="#" data-section="pvp" class="nav-card">
+                    <div class="nav-icon"><img src="data/pvp_icons/champion1.png" alt="PvP"></div>
+                    <div class="nav-title">PvP</div>
+                    <div class="nav-desc">Récompenses d'arène</div>
+                </a>
+                <a href="#" data-section="loot" class="nav-card">
+                    <div class="nav-icon"><img src="data/item_icons/125000005.png" alt="Loot"></div>
+                    <div class="nav-title">Loot</div>
+                    <div class="nav-desc">Drops de monstres</div>
+                </a>
+                <a href="passifs.html" class="nav-card">
+                    <div class="nav-icon"><img src="data/engraving_icons/epacc_boss_albion.png" alt="Passifs"></div>
+                    <div class="nav-title">Passifs</div>
+                    <div class="nav-desc">Bonus d'équipement</div>
+                </a>
+                <a href="capture.html" class="nav-card">
+                    <div class="nav-icon"><img src="data/pet_icons/Dictionary_PET_Flying_Carbuncle_0001.png" alt="Capture"></div>
+                    <div class="nav-title">Capture</div>
+                    <div class="nav-desc">Élevage de familiers</div>
+                </a>
+                <a href="cuisine.html" class="nav-card">
+                    <div class="nav-icon"><img src="data/food_icons/102031102.png" alt="Cuisine"></div>
+                    <div class="nav-title">Cuisine</div>
+                    <div class="nav-desc">Recettes et effets</div>
+                </a>
+                <a href="map.html" class="nav-card">
+                    <div class="nav-icon"><img src="data/Waypoint_Open.png" alt="Carte" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));"></div>
+                    <div class="nav-title">Carte</div>
+                    <div class="nav-desc">Exploration du monde</div>
+                </a>
             </div>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.nav-card[data-section]').forEach(card => {
+                    card.addEventListener('click', e => {
+                        e.preventDefault();
+                        const section = card.dataset.section;
+                        const targetNav = document.querySelector('nav a[data-section="'+section+'"]');
+                        if (targetNav) targetNav.click();
+                    });
+                });
+            });
+            </script>
 
         </section>
 
@@ -197,3 +234,4 @@
     <script src="js/app.js"></script>
 </body>
 </html>
+

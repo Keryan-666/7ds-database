@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7DS Database - Carte</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
@@ -34,14 +37,7 @@
             font-size: 0.85rem;
             color: #cce4ff;
         }
-        #coords-display {
-            bottom: 12px;
-            left: 12px;
-        }
-        #click-display {
-            bottom: 12px;
-            left: 260px;
-        }
+        /* Coords displays removed */
         .map-controls {
             bottom: 50px;
             right: 12px;
@@ -268,11 +264,7 @@
 <div id="map-container">
     <div id="map"></div>
 
-    <!-- Coordonnées curseur -->
-    <div class="map-hud" id="coords-display">Curseur : —</div>
-
-    <!-- Dernier clic -->
-    <div class="map-hud" id="click-display">Clic : —</div>
+    <!-- Coordonnées retirées à la demande de l'utilisateur -->
 
     <!-- Panneau filtres + marqueurs -->
     <div class="map-hud map-controls" id="marker-panel">
@@ -748,16 +740,7 @@ monHeader.addEventListener('click', () => {
     }
 })();
 
-// ── Affichage coordonnées en temps réel ───────────────────────────
-const coordsEl = document.getElementById('coords-display');
-const clickEl  = document.getElementById('click-display');
-
-map.on('mousemove', (e) => {
-    const px = Math.round(e.latlng.lng);
-    const py = Math.round(MAP_H - e.latlng.lat);
-    const g  = leafletToGame(e.latlng);
-    coordsEl.textContent = `px(${px}, ${py})  |  jeu(${g.x}, ${g.y})`;
-});
+// ── Affichage coordonnées en temps réel (Désactivé) ─────────────
 
 // ── Marqueurs ──────────────────────────────────────────────────────
 const markers = [];
@@ -770,13 +753,11 @@ map.on('contextmenu', (e) => {
     if (name === null) return;
 
     addMarker(e.latlng, name, px, py);
-    clickEl.textContent = `Marqueur : "${name}" @ px(${px}, ${py})`;
 });
 
 map.on('click', (e) => {
     const px = Math.round(e.latlng.lng);
     const py = Math.round(MAP_H - e.latlng.lat);
-    clickEl.textContent = `Clic : px(${px}, ${py})`;
     console.log(`Clic px: ${px}, ${py}  |  latlng: ${e.latlng.lat.toFixed(1)}, ${e.latlng.lng.toFixed(1)}`);
 });
 
@@ -807,3 +788,4 @@ function removeMarker(i) {
 </script>
 </body>
 </html>
+
