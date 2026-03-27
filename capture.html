@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7DS Database - Capture</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .capture-notice {
+            background: rgba(255, 200, 50, 0.12);
+            border: 2px solid rgba(255, 200, 50, 0.6);
+            border-radius: 10px;
+            color: #ffd966;
+            font-size: 1.05rem;
+            font-weight: 600;
+            line-height: 1.6;
+            padding: 0.9rem 1.2rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .capture-intro {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .potion-legend {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .potion-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.82rem;
+        }
+
+        .potion-img {
+            width: 44px; height: 44px;
+            object-fit: contain;
+            image-rendering: pixelated;
+        }
+
+        /* Filters */
+        .capture-filters {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        .capture-filters input[type="text"] {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-light);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+
+        .capture-filters select {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-light);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        /* Table */
+        .capture-table-wrap {
+            overflow-x: auto;
+        }
+
+        .capture-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .capture-table th {
+            background: rgba(0,0,0,0.3);
+            color: var(--accent-color);
+            padding: 0.65rem 0.75rem;
+            text-align: left;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 2px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .capture-table th:hover { background: rgba(233,69,96,0.1); }
+        .capture-table th.sorted-asc::after { content: ' ▲'; }
+        .capture-table th.sorted-desc::after { content: ' ▼'; }
+
+        .capture-table td {
+            padding: 0.55rem 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: middle;
+        }
+
+        .capture-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+        .creature-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 180px;
+        }
+
+        .creature-icon {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            flex-shrink: 0;
+        }
+
+        .creature-icon-ph {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .creature-name { font-weight: 600; color: var(--text-light); }
+        .creature-name-en { font-size: 0.72rem; color: var(--text-muted); }
+
+        .resist-badge {
+            display: inline-block;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .resist-0   { background: rgba(126,200,84,0.15);  color: #7ec854; border:1px solid rgba(126,200,84,0.2); }
+        .resist-10  { background: rgba(94,168,94,0.15);   color: #5ea85e; border:1px solid rgba(94,168,94,0.2); }
+        .resist-20  { background: rgba(212,160,23,0.15);  color: #d4a017; border:1px solid rgba(212,160,23,0.2); }
+        .resist-30  { background: rgba(220,120,20,0.15);  color: #dc7814; border:1px solid rgba(220,120,20,0.2); }
+        .resist-40  { background: rgba(200,60,40,0.15);   color: #c83c28; border:1px solid rgba(200,60,40,0.2); }
+        .resist-49  { background: rgba(180,40,40,0.15);   color: #b42828; border:1px solid rgba(180,40,40,0.2); }
+        .resist-55  { background: rgba(160,30,30,0.15);   color: #a01e1e; border:1px solid rgba(160,30,30,0.2); }
+        .resist-60  { background: rgba(140,20,20,0.15);   color: #901414; border:1px solid rgba(140,20,20,0.2); }
+        .resist-70  { background: rgba(100,10,10,0.15);   color: #8b0000; border:1px solid rgba(100,10,10,0.2); }
+
+        .rate-cell {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.88rem;
+            white-space: nowrap;
+        }
+
+        .rate-0    { color: #555; }
+        .rate-low  { color: #c83c28; }
+        .rate-mid  { color: #d4a017; }
+        .rate-good { color: #5ea85e; }
+        .rate-high { color: #7ec854; }
+        .rate-max  { color: #ffd700; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>7DS Database</h1>
+            <p>Base de données complète du jeu Seven Deadly Sins</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html" data-section="home">Accueil</a></li>
+            <li><a href="index.html" data-section="characters">Personnages</a></li>
+            <li><a href="index.html" data-section="monsters">Monstres</a></li>
+            <li><a href="index.html" data-section="stats">Statistiques</a></li>
+            <li><a href="index.html" data-section="pvp">PvP</a></li>
+            <li><a href="index.html" data-section="loot">Loot</a></li>
+            <li><a href="passifs.html">Passifs</a></li>
+            <li><a href="capture.html" class="active">Capture</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="section active">
+            <h2>Taux de Capture des Créatures</h2>
+            <div class="capture-notice">
+                ⚠️ Les pourcentages affichés correspondent au cas où la créature est à <strong>1 HP</strong>.<br>
+                Plus la créature a de HP restants, plus le taux de capture sera réduit.
+            </div>
+            <p class="capture-intro">
+                Les taux de capture dépendent de la potion utilisée et de la résistance de la créature.
+                Cliquer sur un en-tête de colonne pour trier.
+            </p>
+
+            <div class="potion-legend">
+                <div class="potion-badge"><img src="data/item_icons/125000003.png" class="potion-img" alt="Potion I">Potion de capture I (base 20%)</div>
+                <div class="potion-badge"><img src="data/item_icons/125000004.png" class="potion-img" alt="Potion II">Potion de capture II (base 40%)</div>
+                <div class="potion-badge"><img src="data/item_icons/125000005.png" class="potion-img" alt="Potion III">Potion de capture III (base 60%)</div>
+                <div class="potion-badge"><img src="data/item_icons/125000006.png" class="potion-img" alt="Potion IV">Potion de capture IV (base 80%)</div>
+            </div>
+
+            <div class="capture-filters">
+                <input type="text" id="search-creature" placeholder="Rechercher une créature...">
+                <select id="filter-resist">
+                    <option value="">Toutes les résistances</option>
+                    <option value="0">0% — Facile</option>
+                    <option value="10">10%</option>
+                    <option value="20">20%</option>
+                    <option value="30">30%</option>
+                    <option value="40">40%</option>
+                    <option value="49">49%</option>
+                    <option value="55">55%</option>
+                    <option value="60">60%</option>
+                    <option value="70">70% — Très difficile</option>
+                </select>
+            </div>
+
+            <div class="capture-table-wrap">
+                <table class="capture-table" id="capture-table">
+                    <thead>
+                        <tr>
+                            <th data-col="name">Créature</th>
+                            <th data-col="resist">Résistance</th>
+                            <th data-col="p1"><img src="data/item_icons/125000003.png" style="width:20px;height:20px;object-fit:contain;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">Potion I</th>
+                            <th data-col="p2"><img src="data/item_icons/125000004.png" style="width:20px;height:20px;object-fit:contain;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">Potion II</th>
+                            <th data-col="p3"><img src="data/item_icons/125000005.png" style="width:20px;height:20px;object-fit:contain;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">Potion III</th>
+                            <th data-col="p4"><img src="data/item_icons/125000006.png" style="width:20px;height:20px;object-fit:contain;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">Potion IV</th>
+                        </tr>
+                    </thead>
+                    <tbody id="capture-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>7DS Database - Données extraites du jeu Seven Deadly Sins</p>
+        <p>Projet de documentation non-officiel</p>
+    </footer>
+
+    <script>
+    const CREATURES = [
+        { fr:"Grenouille hâtive",        en:"Rush Frog",                           resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Summon_Rushfrog_Small_0001.png" },
+        { fr:"Fleur ambulante rouge",    en:"Red Walking Flower",                  resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Summon_Walkingflower_0001.png" },
+        { fr:"Jeune oiseau géant",       en:"Young Giant Bird",                    resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Gliding_Giantbird_0001.png" },
+        { fr:"Porc des bois",            en:"Forest Hog",                          resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Summon_Forest_Hedghog_0001.png" },
+        { fr:"Pousse",                   en:"Sprout",                              resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Summon_Sprout_0001.png" },
+        { fr:"Crabe des sables",         en:"Sand Crab",                           resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Summon_Crab_Sand_0001.png" },
+        { fr:"Crabe des pierres",        en:"Stone Crab",                          resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Summon_Crab_Stone_0001.png" },
+        { fr:"Lapin mutilateur",         en:"Mutilator Rabbit",                    resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Summon_Rabbit_0001.png" },
+        { fr:"Observateur des bois",     en:"Wood Watcher",                        resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Summon_Woodwatcher_0001.png" },
+        { fr:"Jeune hurleur",            en:"Young Screamer",                      resist:0,  rates:[47,67,87,100],    icon:"data/pet_icons/Dictionary_PET_Summon_Screamer_0001.png" },
+        { fr:"Chauve-souris ténébreuse", en:"Dark Bat",                            resist:10, rates:[33,53,73,93],     icon:"data/pet_icons/Dictionary_PET_Gliding_Bat_0001.png" },
+        { fr:"Mouette",                  en:"Seagull",                             resist:10, rates:[33,53,73,93],     icon:"data/pet_icons/Dictionary_PET_Gliding_Gull_0001.png" },
+        { fr:"Bison crépusculaire",      en:"Dusk Bison",                          resist:20, rates:[19.5,39.5,59.5,79.5], icon:"data/pet_icons/Dictionary_PET_Riding_Duskbison_0001.png" },
+        { fr:"Bison vespéral",           en:"Dawnfall Bison",                      resist:20, rates:[19.5,39.5,59.5,79.5], icon:"data/pet_icons/Dictionary_PET_Riding_Duskbison_0101.png" },
+        { fr:"Chat marin",               en:"Sea Cat",                             resist:20, rates:[19.5,39.5,59.5,79.5], icon:"data/pet_icons/Dictionary_PET_Riding_Marincat_0001.png" },
+        { fr:"Loup tranchant",           en:"Sword Wolf",                          resist:20, rates:[19.5,39.5,59.5,79.5], icon:"data/pet_icons/Dictionary_PET_Riding_Wolfsword_0001.png" },
+        { fr:"Cheval",                   en:"Horse",                               resist:20, rates:[19.5,39.5,59.5,79.5], icon:"data/pet_icons/Dictionary_PET_Riding_Horse_0001.png" },
+        { fr:"Phalène des bois",         en:"Grove Moth",                          resist:30, rates:[6,26,46,66],      icon:"data/pet_icons/Dictionary_PET_Summon_Forest_Moth_0001.png" },
+        { fr:"Oiseau d'orage",           en:"Storm Bird",                          resist:30, rates:[6,26,46,66],      icon:"data/pet_icons/Dictionary_PET_Gliding_Stormbird_0001.png" },
+        { fr:"Esprit du feu",            en:"Fire Spirit",                         resist:30, rates:[6,26,46,66],      icon:"data/pet_icons/Dictionary_PET_Summon_Spirit_Fire_Small_0001.png" },
+        { fr:"Esprit des flammes",       en:"Flame Spirit",                        resist:30, rates:[6,26,46,66],      icon:"data/pet_icons/Dictionary_PET_Summon_Spirit_Fire_Big_0001.png" },
+        { fr:"Chenille des herbes",      en:"Grass Crawler",                       resist:30, rates:[6,26,46,66],      icon:"data/pet_icons/Dictionary_PET_Summon_Babycrawler_0001.png" },
+        { fr:"Renard rouge",             en:"Red Fox",                             resist:40, rates:[0,12.5,32.5,52.5], icon:"data/pet_icons/Dictionary_PET_Riding_Fox_0001.png" },
+        { fr:"Renard du désert",         en:"Desert Fox",                          resist:40, rates:[0,12.5,32.5,52.5], icon:"data/pet_icons/Dictionary_PET_Riding_Fox_0101.png" },
+        { fr:"Dragon sauvage",           en:"Wild Dragon",                         resist:49, rates:[0,0,20,40],       icon:"data/pet_icons/Dictionary_PET_Flying_Wilddragon_0001.png" },
+        { fr:"Golem de la forêt",        en:"Forest Golem",                        resist:55, rates:[0,0,12,32],       icon:"data/pet_icons/Dictionary_PET_Summon_Golem_Stone_0001.png" },
+        { fr:"Frelon sauvage",           en:"Wild Hornet",                         resist:55, rates:[0,0,12,32],       icon:"data/pet_icons/Dictionary_PET_Summon_Wildhornet_0001.png" },
+        { fr:"Dragon sauvage féroce",    en:"Fierce Wild Dragon",                  resist:60, rates:[0,0,5,25],        icon:"data/pet_icons/Dictionary_PET_Flying_Wilddragon_0101.png" },
+        { fr:"Dragon sauvage imposant",  en:"Heavy Wild Dragon",                   resist:60, rates:[0,0,5,25],        icon:"data/pet_icons/Dictionary_PET_Flying_Wilddragon_0201.png" },
+        { fr:"Esprit de l'eau",          en:"Water Spirit",                        resist:60, rates:[0,0,5,25],        icon:"data/pet_icons/Dictionary_PET_Summon_Waterspirit_0001.png" },
+        { fr:"Dragon gardien de l'équilibre Brion", en:"Guardian Dragon of Balance Brion", resist:60, rates:[0,0,5,25], icon:"data/pet_icons/Dictionary_PET_Summon_Dragonbaby_0001.png" },
+        { fr:"Rat kangourou sauvage",    en:"Wild Kangaroo Rat",                   resist:60, rates:[0,0,5,25],        icon:"data/pet_icons/Dictionary_PET_Riding_Jumpmouse_0001.png" },
+        { fr:"Phénix sauvage",           en:"Wild Phoenix",                        resist:70, rates:[0,0,0,15],        icon:"data/pet_icons/Dictionary_PET_Flying_Vulture_Fire_0001.png" },
+        { fr:"Écureuil volant sauvage",  en:"Wild Flying Squirrel",                resist:70, rates:[0,0,0,15],        icon:"data/pet_icons/Dictionary_PET_Gliding_Sugarglider_0001.png" },
+    ];
+
+    function rateClass(r) {
+        if (r === 0)    return 'rate-0';
+        if (r < 15)     return 'rate-low';
+        if (r < 40)     return 'rate-mid';
+        if (r < 70)     return 'rate-good';
+        if (r < 100)    return 'rate-high';
+        return 'rate-max';
+    }
+
+    function rateDisplay(r) {
+        if (r === 0) return '<span class="rate-cell rate-0">—</span>';
+        if (r === 100) return '<span class="rate-cell rate-max">100%</span>';
+        return '<span class="rate-cell ' + rateClass(r) + '">' + r + '%</span>';
+    }
+
+    function resistClass(r) {
+        return 'resist-' + r;
+    }
+
+    let sortCol = 'resist';
+    let sortDir = 1;
+
+    function renderTable() {
+        const search = document.getElementById('search-creature').value.toLowerCase();
+        const filterResist = document.getElementById('filter-resist').value;
+
+        let data = CREATURES.filter(c => {
+            const matchSearch = !search ||
+                c.fr.toLowerCase().includes(search) ||
+                c.en.toLowerCase().includes(search);
+            const matchResist = !filterResist || String(c.resist) === filterResist;
+            return matchSearch && matchResist;
+        });
+
+        data.sort((a, b) => {
+            let va, vb;
+            if (sortCol === 'name')   { va = a.fr; vb = b.fr; return sortDir * va.localeCompare(vb); }
+            if (sortCol === 'resist') { va = a.resist; vb = b.resist; }
+            else {
+                const idx = parseInt(sortCol.replace('p','')) - 1;
+                va = a.rates[idx]; vb = b.rates[idx];
+            }
+            return sortDir * (va - vb);
+        });
+
+        document.getElementById('capture-tbody').innerHTML = data.map(c => `
+            <tr>
+                <td>
+                    <div class="creature-cell">
+                        ${c.icon
+                            ? `<img src="${c.icon}" alt="${c.fr}" class="creature-icon">`
+                            : `<div class="creature-icon-ph"></div>`}
+                        <div>
+                            <div class="creature-name">${c.fr}</div>
+                            <div class="creature-name-en">${c.en}</div>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="resist-badge ${resistClass(c.resist)}">${c.resist}%</span></td>
+                <td style="text-align:center">${rateDisplay(c.rates[0])}</td>
+                <td style="text-align:center">${rateDisplay(c.rates[1])}</td>
+                <td style="text-align:center">${rateDisplay(c.rates[2])}</td>
+                <td style="text-align:center">${rateDisplay(c.rates[3])}</td>
+            </tr>
+        `).join('');
+    }
+
+    // Sort on header click
+    document.querySelectorAll('.capture-table th[data-col]').forEach(th => {
+        th.addEventListener('click', () => {
+            const col = th.dataset.col;
+            if (sortCol === col) { sortDir *= -1; }
+            else { sortCol = col; sortDir = 1; }
+            document.querySelectorAll('.capture-table th').forEach(t => {
+                t.classList.remove('sorted-asc','sorted-desc');
+            });
+            th.classList.add(sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
+            renderTable();
+        });
+    });
+
+    document.getElementById('search-creature').addEventListener('input', renderTable);
+    document.getElementById('filter-resist').addEventListener('change', renderTable);
+
+    // Initial render sorted by resistance
+    document.querySelector('[data-col="resist"]').classList.add('sorted-asc');
+    renderTable();
+    </script>
+</body>
+</html>
