@@ -684,6 +684,18 @@ MONSTER_SPAWNS.forEach(mon => {
         : `<span class="no-img"></span>`;
     opt.innerHTML = `${imgEl}<span>${mon.name}</span>`;
     opt.addEventListener('click', () => {
+        if (currentMonOption === opt) {
+            // Déselectionner
+            opt.classList.remove('selected');
+            currentMonOption = null;
+            if (currentMonLayer) { currentMonLayer.remove(); currentMonLayer = null; }
+            monSelectedCard.style.display = 'none';
+            monSelectedCard.innerHTML = '';
+            monLayerOn = false;
+            monDropdown.classList.remove('open');
+            monHeader.classList.remove('open');
+            return;
+        }
         if (currentMonOption) currentMonOption.classList.remove('selected');
         opt.classList.add('selected');
         currentMonOption = opt;
