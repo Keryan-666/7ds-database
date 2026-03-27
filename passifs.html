@@ -41,10 +41,14 @@
         .eng-costume-img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; }
         .eng-costume-col-empty { display:flex; align-items:center; justify-content:center; font-size:2rem; }
         .eng-content-col { flex:1; min-width:0; display:flex; flex-direction:column; padding:.75rem .85rem .7rem; }
-        .eng-cos-name { font-size:.85rem; font-weight:700; margin-bottom:.5rem; line-height:1.2; }
+        .eng-cos-name { font-size:.85rem; font-weight:700; margin-bottom:.5rem; line-height:1.2; display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; }
         .eng-cos-name.grade5 { color:#ffd700; }
         .eng-cos-name.grade4 { color:#b87fff; }
         .eng-cos-name.grade3 { color:#64b4ff; }
+        .cos-grade-tag { font-size:.65rem; font-weight:800; padding:.1rem .35rem; border-radius:4px; letter-spacing:.03em; flex-shrink:0; }
+        .cos-grade-tag.grade5 { background:rgba(255,215,0,.15); color:#ffd700; border:1px solid rgba(255,215,0,.3); }
+        .cos-grade-tag.grade4 { background:rgba(184,127,255,.15); color:#b87fff; border:1px solid rgba(184,127,255,.3); }
+        .cos-grade-tag.grade3 { background:rgba(100,180,255,.15); color:#64b4ff; border:1px solid rgba(100,180,255,.3); }
         .eng-passive-box { background:#0f0f23; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:.5rem .65rem; flex:1; display:flex; flex-direction:column; gap:.4rem; }
         .eng-passive-head { display:flex; align-items:center; gap:.5rem; }
         .eng-icon-sm { width:32px; height:32px; border-radius:7px; background:#16213e; border:1px solid rgba(255,255,255,0.1); object-fit:contain; flex-shrink:0; }
@@ -264,7 +268,10 @@ function buildCard(eng) {
 
     if (cos) {
         const gradeClass = cos.grade || '';
-        const titleHtml = '<div class="eng-cos-name ' + gradeClass + '">' + cos.name + '</div>';
+        const gradeTagMap = { grade5:'SSR', grade4:'SR', grade3:'R', grade2:'N', grade1:'N' };
+        const gradeTagLabel = gradeTagMap[cos.grade] || '';
+        const gradeTag = gradeTagLabel ? '<span class="cos-grade-tag ' + gradeClass + '">' + gradeTagLabel + '</span>' : '';
+        const titleHtml = '<div class="eng-cos-name ' + gradeClass + '">' + cos.name + gradeTag + '</div>';
         header = buildSideLayout(eng, cos.icon, '👤', titleHtml);
         body = '<div class="eng-body">' + levelsHtml + equipHtml + '</div>';
 
