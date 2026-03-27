@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7DS Database - Cuisine</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ── Recherche ───────────────────────────────────────────── */
+        .cuisine-search-bar {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+        }
+        .cuisine-search-bar input {
+            flex: 1 1 300px;
+        }
+
+        /* ── Onglets catégorie ───────────────────────────────────── */
+        .cat-tabs {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.4rem;
+        }
+        .cat-tab {
+            padding: 0.45rem 1.1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(80,120,200,0.35);
+            background: rgba(20,28,55,0.85);
+            color: #7799cc;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .cat-tab:hover { border-color: rgba(140,180,255,0.6); color: #c0d8ff; }
+        .cat-tab.active { background: rgba(50,90,200,0.35); color: #d0e8ff; border-color: rgba(100,160,255,0.75); box-shadow: 0 0 10px rgba(80,140,255,0.2); }
+        .cat-tab .tab-count { font-size: 0.7rem; opacity: 0.65; font-weight: 400; }
+        .cat-tab-hp.active    { background: rgba(30,120,60,0.3);   color: #80e898; border-color: rgba(50,180,80,0.7); }
+        .cat-tab-atk.active   { background: rgba(200,60,40,0.3);   color: #ff9880; border-color: rgba(220,80,60,0.7); }
+        .cat-tab-def.active   { background: rgba(50,70,200,0.3);   color: #90b4ff; border-color: rgba(80,120,230,0.7); }
+        .cat-tab-world.active { background: rgba(140,80,200,0.3);  color: #cc98ff; border-color: rgba(170,110,230,0.7); }
+        .cat-tab-other.active { background: rgba(80,90,110,0.3);   color: #aabbcc; border-color: rgba(100,120,150,0.7); }
+
+        /* ── Accordéon sous-catégorie ────────────────────────────── */
+        .sub-group {
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(60,90,160,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .sub-group-header {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.65rem 1rem;
+            background: rgba(20,28,60,0.85);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .sub-group-header:hover { background: rgba(30,42,80,0.9); }
+        .sub-group-header .sub-icon { font-size: 1.1rem; }
+        .sub-group-header .sub-label { font-size: 0.92rem; font-weight: 700; color: #c8dcff; flex: 1; }
+        .sub-group-header .sub-count { font-size: 0.72rem; color: #5570a0; }
+        .sub-group-header .chevron { color: #445580; font-size: 0.75rem; transition: transform 0.2s; }
+        .sub-group.open .chevron { transform: rotate(90deg); }
+        .sub-group-body { display: none; }
+        .sub-group.open .sub-group-body { display: block; }
+
+        /* ── Tableau recettes ────────────────────────────────────── */
+        .recipe-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        .recipe-table th {
+            padding: 0.4rem 0.7rem;
+            text-align: left;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #445580;
+            border-bottom: 1px solid rgba(50,80,140,0.3);
+            background: rgba(15,20,45,0.7);
+        }
+        .recipe-table td {
+            padding: 0.45rem 0.7rem;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(30,50,100,0.2);
+        }
+        .recipe-table tr:last-child td { border-bottom: none; }
+        .recipe-table tr:hover td { background: rgba(40,60,120,0.12); }
+
+        /* ── Cellule plat ────────────────────────────────────────── */
+        .cell-dish {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-width: 160px;
+        }
+        .dish-icon-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: contain;
+            background: rgba(20,26,50,0.8);
+            border: 1px solid rgba(60,90,160,0.3);
+            flex-shrink: 0;
+        }
+        .dish-name-sm {
+            color: #c8dcf0;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        /* ── Badge grade ─────────────────────────────────────────── */
+        .grade-badge {
+            display: inline-block;
+            padding: 0.1rem 0.45rem;
+            border-radius: 5px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .gb-grade1 { background: rgba(100,110,130,0.3); color: #99aabc; border: 1px solid rgba(100,110,130,0.4); }
+        .gb-grade2 { background: rgba(30,140,60,0.25);  color: #6fdf8a; border: 1px solid rgba(40,160,70,0.45); }
+        .gb-grade3 { background: rgba(40,100,220,0.25); color: #80b4ff; border: 1px solid rgba(60,130,240,0.45); }
+        .gb-grade4 { background: rgba(150,70,200,0.25); color: #d080ff; border: 1px solid rgba(170,90,220,0.45); }
+
+        /* ── Cellule effet ───────────────────────────────────────── */
+        .cell-effect {
+            color: #7eb8d8;
+            line-height: 1.4;
+            min-width: 200px;
+        }
+        .cell-effect .eff-main { color: #9dd4ee; font-weight: 500; }
+        .cell-effect .eff-bonus { color: #6699aa; font-size: 0.76rem; }
+
+        /* ── Cellule ingrédients ─────────────────────────────────── */
+        .cell-ings {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            min-width: 140px;
+        }
+        .ing-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: rgba(20,30,60,0.8);
+            border: 1px solid rgba(50,80,150,0.3);
+            border-radius: 5px;
+            padding: 0.15rem 0.4rem 0.15rem 0.2rem;
+            font-size: 0.74rem;
+            color: #a0c0d8;
+            white-space: nowrap;
+        }
+        .ing-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 3px;
+            object-fit: contain;
+        }
+        .ing-qty { color: #ffd060; font-weight: 600; font-size: 0.68rem; }
+
+        /* ── Mode recherche ──────────────────────────────────────── */
+        .search-results-header {
+            font-size: 0.8rem;
+            color: #5577aa;
+            margin-bottom: 0.8rem;
+        }
+        .search-results-header span { color: #aabbdd; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>7DS Database</h1>
+            <p>Base de donnees complete du jeu Seven Deadly Sins</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html?section=home">Accueil</a></li>
+            <li><a href="index.html?section=characters">Personnages</a></li>
+            <li><a href="index.html?section=monsters">Monstres</a></li>
+            <li><a href="index.html?section=pvp">PvP</a></li>
+            <li><a href="index.html?section=loot">Loot</a></li>
+            <li><a href="passifs.html">Passifs</a></li>
+            <li><a href="capture.html">Capture</a></li>
+            <li><a href="cuisine.html" class="active">Cuisine</a></li>
+            <li><a href="map.html">Carte</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="section active" style="display:block;">
+            <h2>Recettes de Cuisine</h2>
+
+            <!-- Barre de recherche -->
+            <div class="cuisine-search-bar filters">
+                <input type="text" id="search-recipe"
+                    placeholder="Rechercher par plat, ingrédient ou amélioration...">
+            </div>
+
+            <!-- Zone de résultats de recherche -->
+            <div id="search-mode" style="display:none;">
+                <div class="search-results-header">
+                    <span id="search-count">0</span> recette(s) trouvée(s)
+                </div>
+                <div id="search-table-wrap"></div>
+            </div>
+
+            <!-- Onglets catégorie + accordéons -->
+            <div id="tree-mode">
+                <div class="cat-tabs" id="cat-tabs"></div>
+                <div id="cat-content"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>7DS Database - Donnees extraites du jeu Seven Deadly Sins</p>
+        <p>Projet de documentation non-officiel</p>
+    </footer>
+
+    <script src="data/cooking_recipes.js"></script>
+    <script>
+    (function () {
+        const ICON = 'data/food_icons/';
+
+        // ── Taxonomie complète ───────────────────────────────────
+        const CATS = [
+            { id: 'hp',    label: '❤️ Soin PV',  cls: 'cat-tab-hp' },
+            { id: 'atk',   label: '⚔️ ATK',       cls: 'cat-tab-atk' },
+            { id: 'def',   label: '🛡️ DEF',        cls: 'cat-tab-def' },
+            { id: 'world', label: '🌍 Monde',      cls: 'cat-tab-world' },
+            { id: 'other', label: '✨ Autre',      cls: 'cat-tab-other' },
+        ];
+
+        // effect_key (après strip) → {cat, order, icon, label}
+        const SUB_MAP = {
+            // HP
+            'hp':        { cat: 'hp', order: 0, icon: '❤️', label: 'Soin simple' },
+            'hp2':       { cat: 'hp', order: 1, icon: '❤️', label: 'Soin + effet Ventre plein' },
+            'hp_stun':   { cat: 'hp', order: 2, icon: '💫', label: '+ Étourdissement' },
+            // ATK
+            'atk':          { cat: 'atk', order: 0, icon: '⚔️', label: 'Général' },
+            'atkcri':        { cat: 'atk', order: 1, icon: '🎯', label: '+ Critique' },
+            'atk_stun':      { cat: 'atk', order: 2, icon: '💫', label: '+ Étourdissement' },
+            'atk_swim':      { cat: 'atk', order: 3, icon: '🏊', label: '+ Endurance nage' },
+            'atk_swimsp':    { cat: 'atk', order: 4, icon: '🏊', label: '+ Vitesse nage' },
+            'atk_wind':      { cat: 'atk', order: 5, icon: '💨', label: 'Vent' },
+            'atk_thunder':   { cat: 'atk', order: 6, icon: '⚡', label: 'Foudre' },
+            'atk_earth':     { cat: 'atk', order: 7, icon: '🌿', label: 'Terre' },
+            'atk_ice':       { cat: 'atk', order: 8, icon: '❄️', label: 'Glace' },
+            'atk_dark':      { cat: 'atk', order: 9,  icon: '🌑', label: 'Ténèbres' },
+            'hp_fire':       { cat: 'atk', order: 10, icon: '🔥', label: 'Feu' },
+            'hp_wind':       { cat: 'atk', order: 11, icon: '💨', label: 'Vent' },
+            'hp_holy':       { cat: 'atk', order: 12, icon: '✨', label: 'Sacré' },
+            // DEF
+            'def':       { cat: 'def', order: 0, icon: '🛡️', label: 'Général' },
+            'def_cri':   { cat: 'def', order: 1, icon: '🎯', label: '+ Résistance Critique' },
+            'def_stun':  { cat: 'def', order: 2, icon: '💫', label: '+ Étourdissement' },
+            'def_fire':  { cat: 'def', order: 3, icon: '🔥', label: 'Feu' },
+            'def_holy':  { cat: 'def', order: 4, icon: '✨', label: 'Sacré' },
+            // Monde
+            'world_fly':          { cat: 'world', order: 0,  icon: '🦅', label: 'Vol' },
+            'world_flyswim':      { cat: 'world', order: 1,  icon: '🦅', label: 'Vol + Nage' },
+            'world_flygliding':   { cat: 'world', order: 2,  icon: '🦅', label: 'Vol + Vol plané' },
+            'world_gliding':      { cat: 'world', order: 3,  icon: '🪂', label: 'Vol plané – Endurance' },
+            'world_gliding_sp':   { cat: 'world', order: 4,  icon: '🪂', label: 'Vol plané – Vitesse' },
+            'world_gliding_sp_stun': { cat: 'world', order: 5, icon: '🪂', label: 'Vol plané – Vitesse + Stun' },
+            'world_glidingswim':  { cat: 'world', order: 6,  icon: '🪂', label: 'Vol plané + Nage' },
+            'world_glidingswim2': { cat: 'world', order: 7,  icon: '🪂', label: 'Vol plané + Nage (amélioré)' },
+            'world_swim':         { cat: 'world', order: 8,  icon: '🏊', label: 'Nage – Endurance' },
+            'world_swim_sp':      { cat: 'world', order: 9,  icon: '🏊', label: 'Nage – Vitesse' },
+            'world_swim_stun':    { cat: 'world', order: 10, icon: '🏊', label: 'Nage + Stun' },
+            'world_underwater_sp':{ cat: 'world', order: 11, icon: '🤿', label: 'Plongée – Vitesse' },
+        };
+
+        const GRADE_ORDER = { grade1: 0, grade2: 1, grade3: 2, grade4: 3 };
+
+        // ── Helpers DOM ─────────────────────────────────────────
+        function imgEl(id, cls, fallback) {
+            const img = document.createElement('img');
+            img.src = ICON + id + '.png';
+            img.className = cls;
+            img.alt = '';
+            img.onerror = function () { this.src = ''; this.style.display = 'none'; };
+            return img;
+        }
+
+        // ── Construire ligne de tableau ──────────────────────────
+        function buildRow(r) {
+            const tr = document.createElement('tr');
+
+            // Plat
+            const tdDish = document.createElement('td');
+            const wrap = document.createElement('div');
+            wrap.className = 'cell-dish';
+            wrap.appendChild(imgEl(r.dish_id, 'dish-icon-sm'));
+            const nameEl = document.createElement('span');
+            nameEl.className = 'dish-name-sm';
+            nameEl.textContent = r.name;
+            wrap.appendChild(nameEl);
+            tdDish.appendChild(wrap);
+            tr.appendChild(tdDish);
+
+            // Grade
+            const tdGrade = document.createElement('td');
+            const badge = document.createElement('span');
+            badge.className = 'grade-badge gb-' + (r.grade || '');
+            badge.textContent = (r.grade || '').replace('grade', 'G');
+            tdGrade.appendChild(badge);
+            tr.appendChild(tdGrade);
+
+            // Effet
+            const tdEff = document.createElement('td');
+            tdEff.className = 'cell-effect';
+            const lines = (r.effect || '').split('\n').filter(l => l.trim());
+            if (lines.length > 0) {
+                const main = document.createElement('div');
+                main.className = 'eff-main';
+                main.textContent = lines[0];
+                tdEff.appendChild(main);
+                for (let i = 1; i < lines.length; i++) {
+                    const bonus = document.createElement('div');
+                    bonus.className = 'eff-bonus';
+                    bonus.textContent = lines[i];
+                    tdEff.appendChild(bonus);
+                }
+            }
+            tr.appendChild(tdEff);
+
+            // Ingrédients
+            const tdIng = document.createElement('td');
+            const chips = document.createElement('div');
+            chips.className = 'cell-ings';
+            for (const ing of r.ingredients) {
+                const chip = document.createElement('div');
+                chip.className = 'ing-chip';
+                chip.title = ing.name;
+                chip.appendChild(imgEl(ing.id, 'ing-icon'));
+                const nm = document.createElement('span');
+                nm.textContent = ing.name;
+                chip.appendChild(nm);
+                if (ing.qty > 1) {
+                    const qty = document.createElement('span');
+                    qty.className = 'ing-qty';
+                    qty.textContent = '×' + ing.qty;
+                    chip.appendChild(qty);
+                }
+                chips.appendChild(chip);
+            }
+            tdIng.appendChild(chips);
+            tr.appendChild(tdIng);
+
+            return tr;
+        }
+
+        function buildTable(recipes) {
+            const table = document.createElement('table');
+            table.className = 'recipe-table';
+            const thead = document.createElement('thead');
+            thead.innerHTML = '<tr><th>Plat</th><th>Grade</th><th>Amélioration</th><th>Ingrédients</th></tr>';
+            table.appendChild(thead);
+            const tbody = document.createElement('tbody');
+            const sorted = [...recipes].sort((a, b) =>
+                (GRADE_ORDER[a.grade] || 0) - (GRADE_ORDER[b.grade] || 0));
+            for (const r of sorted) tbody.appendChild(buildRow(r));
+            table.appendChild(tbody);
+            return table;
+        }
+
+        // ── Construire accordéon sous-groupe ─────────────────────
+        function buildSubGroup(subKey, recipes) {
+            const meta = SUB_MAP[subKey] || { icon: '•', label: subKey };
+            const group = document.createElement('div');
+            group.className = 'sub-group';
+
+            const header = document.createElement('div');
+            header.className = 'sub-group-header';
+            header.innerHTML =
+                '<span class="sub-icon">' + meta.icon + '</span>' +
+                '<span class="sub-label">' + meta.label + '</span>' +
+                '<span class="sub-count">' + recipes.length + ' recette' + (recipes.length > 1 ? 's' : '') + '</span>' +
+                '<span class="chevron">▶</span>';
+            header.addEventListener('click', () => group.classList.toggle('open'));
+            group.appendChild(header);
+
+            const body = document.createElement('div');
+            body.className = 'sub-group-body';
+            body.appendChild(buildTable(recipes));
+            group.appendChild(body);
+
+            return group;
+        }
+
+        // ── Construire contenu d'un onglet catégorie ──────────────
+        function buildCatContent(catId, recipes) {
+            const div = document.createElement('div');
+
+            // Grouper par sous-catégorie (effect_key)
+            const groups = {};
+            for (const r of recipes) {
+                const k = r.effect_key || 'other';
+                if (!groups[k]) groups[k] = [];
+                groups[k].push(r);
+            }
+
+            // Trier les sous-groupes selon SUB_MAP.order
+            const sortedKeys = Object.keys(groups).sort((a, b) => {
+                const oa = SUB_MAP[a] ? SUB_MAP[a].order : 99;
+                const ob = SUB_MAP[b] ? SUB_MAP[b].order : 99;
+                return oa - ob;
+            });
+
+            for (const k of sortedKeys) {
+                div.appendChild(buildSubGroup(k, groups[k]));
+            }
+            return div;
+        }
+
+        // ── Construire les onglets et le contenu arborescent ──────
+        function buildTree() {
+            const tabsEl = document.getElementById('cat-tabs');
+            const contentEl = document.getElementById('cat-content');
+
+            // Grouper par catégorie principale
+            const byCat = {};
+            for (const r of COOKING_RECIPES) {
+                const c = r.effect_cat || 'other';
+                if (!byCat[c]) byCat[c] = [];
+                byCat[c].push(r);
+            }
+
+            let firstTab = null;
+            for (const cat of CATS) {
+                const recipes = byCat[cat.id] || [];
+                if (!recipes.length) continue;
+
+                const tab = document.createElement('button');
+                tab.className = 'cat-tab ' + cat.cls;
+                tab.dataset.cat = cat.id;
+                tab.innerHTML = cat.label + ' <span class="tab-count">(' + recipes.length + ')</span>';
+                tabsEl.appendChild(tab);
+
+                const panel = document.createElement('div');
+                panel.className = 'cat-panel';
+                panel.dataset.cat = cat.id;
+                panel.style.display = 'none';
+                panel.appendChild(buildCatContent(cat.id, recipes));
+                contentEl.appendChild(panel);
+
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.cat-panel').forEach(p => p.style.display = 'none');
+                    tab.classList.add('active');
+                    panel.style.display = 'block';
+                });
+
+                if (!firstTab) { firstTab = tab; panel.style.display = 'block'; }
+            }
+            if (firstTab) firstTab.classList.add('active');
+        }
+
+        // ── Recherche globale ─────────────────────────────────────
+        function doSearch(q) {
+            const treeMode = document.getElementById('tree-mode');
+            const searchMode = document.getElementById('search-mode');
+            q = q.trim().toLowerCase();
+
+            if (!q) {
+                searchMode.style.display = 'none';
+                treeMode.style.display = 'block';
+                return;
+            }
+            treeMode.style.display = 'none';
+            searchMode.style.display = 'block';
+
+            const matches = COOKING_RECIPES.filter(r =>
+                r.name.toLowerCase().includes(q) ||
+                r.effect.toLowerCase().includes(q) ||
+                r.ingredients.some(i => i.name.toLowerCase().includes(q))
+            );
+
+            document.getElementById('search-count').textContent = matches.length;
+            const wrap = document.getElementById('search-table-wrap');
+            wrap.innerHTML = '';
+            wrap.appendChild(buildTable(matches));
+        }
+
+        // ── Init ──────────────────────────────────────────────────
+        buildTree();
+
+        const searchEl = document.getElementById('search-recipe');
+        searchEl.addEventListener('input', () => doSearch(searchEl.value));
+    })();
+    </script>
+</body>
+</html>
