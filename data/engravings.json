@@ -1,0 +1,227 @@
+{
+  "weaponPassives": [
+    {"id": "epwp_meliodas_b", "name": "Meliodas Weapon Passive", "icon": "equippassive_weapon_meliodas_b", "maxLv": 7, "character": "1005", "values": ["{0}:{7}", "{1}:{5}", "{2}:{15}"]},
+    {"id": "epwp_daisy_b", "name": "Daisy Weapon Passive", "icon": "equippassive_weapon_daisy_b", "maxLv": 7, "character": "1028", "values": ["{0}:{10}", "{1}:{12}", "{2}:{6}"]},
+    {"id": "epwp_blackflame", "name": "Black Flame", "icon": "equippassive_weapon_redflame", "maxLv": 7, "values": ["{0}:{10}"]},
+    {"id": "epwp_redflame", "name": "Red Flame", "icon": "equippassive_weapon_redflame", "maxLv": 7, "values": ["{0}:{10}"]},
+    {"id": "epwp_hellfire", "name": "Hellfire", "icon": "equippassive_weapon_hellfire", "maxLv": 7, "values": ["{0}:{100%}", "{1}:{20}"]},
+    {"id": "epwp_darkness", "name": "Darkness", "icon": "equippassive_weapon_darkness", "maxLv": 7, "values": ["{0}:{20%}", "{1}:{7}"]},
+    {"id": "epwp_a", "name": "Weapon Passive A", "icon": "equippassive_weapon_a", "maxLv": 7, "values": ["{0}:{50%}", "{1}:{20}", "{2}:{20}"]},
+    {"id": "epwp_b", "name": "Weapon Passive B", "icon": "equippassive_weapon_b", "maxLv": 7, "values": ["{0}:{20}", "{1}:{30}"]},
+    {"id": "epwp_c", "name": "Weapon Passive C", "icon": "equippassive_weapon_c", "maxLv": 7, "values": ["{0}:{15}", "{1}:{25}"]},
+    {"id": "epwp_d", "name": "Weapon Passive D", "icon": "equippassive_weapon_d", "maxLv": 7, "values": []},
+    {"id": "epwp_e", "name": "Weapon Passive E", "icon": "equippassive_weapon_e", "maxLv": 7, "values": ["{0}:{20}"]},
+    {"id": "epwp_f", "name": "Weapon Passive F", "icon": "equippassive_weapon_f", "maxLv": 7, "values": ["{0}:{15}", "{1}:{20%}", "{2}:{25}"]},
+    {"id": "epwp_g", "name": "Weapon Passive G", "icon": "equippassive_weapon_g", "maxLv": 7, "values": []}
+  ],
+  "bossPassives": {
+    "armor": [
+      {"id": "epar_boss_drake", "name": "Drake Armor", "icon": "equippassive_boss_drake", "maxLv": 3, "values": ["{0}:{60}"]},
+      {"id": "epar_boss_caveguardian", "name": "Cave Guardian Armor", "icon": "equippassive_boss_caveguardian", "maxLv": 3, "values": ["{0}:{10%}", "{1}:{10}", "{2}:{50}"]},
+      {"id": "epar_boss_warden", "name": "Warden Armor", "icon": "equippassive_boss_warden", "maxLv": 3, "values": ["{0}:{15}"]},
+      {"id": "epar_boss_ancientdragon", "name": "Ancient Dragon Armor", "icon": "equippassive_boss_ancientdragon", "maxLv": 3, "values": ["{0}:{3}", "{1}:{30}"]},
+      {"id": "epar_boss_spiderqueen", "name": "Spider Queen Armor", "icon": "equippassive_boss_spiderqueen", "maxLv": 3, "values": ["{0}:{8}", "{1}:{15}"]}
+    ],
+    "accessory": [
+      {"id": "epacc_boss_longdead", "name": "Longdead Accessory", "icon": "equippassive_boss_longdead", "maxLv": 3, "values": ["{0}:{20%}", "{1}:{20}", "{2}:{1}"]},
+      {"id": "epacc_boss_albion", "name": "Albion Accessory", "icon": "equippassive_boss_albion", "maxLv": 3, "values": ["{0}:{10}", "{1}:{30}"]},
+      {"id": "epacc_boss_guila", "name": "Guila Accessory", "icon": "equippassive_boss_guila", "maxLv": 3, "values": ["{0}:{8}", "{1}:{100}", "{2}:{20}"]}
+    ]
+  },
+  "characterEngravings": {
+    "1001": {
+      "name": "Tristan",
+      "engravings": [
+        {"id": "epeq_tristan_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{30%}", "{1}:{10}"]},
+        {"id": "epeq_tristan_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}", "{1}:{20}"]},
+        {"id": "epeq_tristan_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}", "{1}:{20}"]}
+      ]
+    },
+    "1002": {
+      "name": "Tioreh",
+      "engravings": [
+        {"id": "epeq_tioreh_a", "grade": "SR", "maxLv": 3, "values": []},
+        {"id": "epeq_tioreh_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}", "{1}:{15}", "{2}:{20}"]},
+        {"id": "epeq_tioreh_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}"]}
+      ]
+    },
+    "1003": {
+      "name": "Dreydrin",
+      "engravings": [
+        {"id": "epeq_dreydrin_a", "grade": "SR", "maxLv": 3, "values": []},
+        {"id": "epeq_dreydrin_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}"]},
+        {"id": "epeq_dreydrin_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}"]}
+      ]
+    },
+    "1004": {
+      "name": "Howzer",
+      "engravings": [
+        {"id": "epeq_howzer_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{10}", "{1}:{20}"]},
+        {"id": "epeq_howzer_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}", "{1}:{25}"]},
+        {"id": "epeq_howzer_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}", "{1}:{10}"]}
+      ]
+    },
+    "1005": {
+      "name": "Meliodas",
+      "engravings": [
+        {"id": "epeq_meliodas_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{13}", "{1}:{20}"]},
+        {"id": "epeq_meliodas_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{5}", "{1}:{8}"]}
+      ]
+    },
+    "1006": {
+      "name": "Gilthunder",
+      "engravings": [
+        {"id": "epeq_gilthunder_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{10}"]},
+        {"id": "epeq_gilthunder_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}"]},
+        {"id": "epeq_gilthunder_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20%}", "{1}:{15}", "{2}:{30}"]}
+      ]
+    },
+    "1009": {
+      "name": "Elaine",
+      "engravings": [
+        {"id": "epeq_elaine_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{20%}", "{1}:{80%}", "{2}:{20}"]},
+        {"id": "epeq_elaine_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{5}"]},
+        {"id": "epeq_elaine_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}", "{1}:{20}"]}
+      ]
+    },
+    "1010": {
+      "name": "King",
+      "engravings": [
+        {"id": "epeq_king_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{5}", "{1}:{15}", "{2}:{25}"]},
+        {"id": "epeq_king_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}", "{1}:{10}", "{2}:{20}"]},
+        {"id": "epeq_king_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{10}"]}
+      ]
+    },
+    "1011": {
+      "name": "Dreyfus",
+      "engravings": [
+        {"id": "epeq_dreyfus_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{20}"]},
+        {"id": "epeq_dreyfus_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}"]},
+        {"id": "epeq_dreyfus_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}"]}
+      ]
+    },
+    "1012": {
+      "name": "Hendrickson",
+      "engravings": [
+        {"id": "epeq_hendrickson_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{10}"]},
+        {"id": "epeq_hendrickson_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{30%}", "{1}:{14}"]},
+        {"id": "epeq_hendrickson_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{10}", "{1}:{25}"]}
+      ]
+    },
+    "1013": {
+      "name": "Slader",
+      "engravings": [
+        {"id": "epeq_slader_a", "grade": "SR", "maxLv": 3, "values": []},
+        {"id": "epeq_slader_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}"]},
+        {"id": "epeq_slader_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{10}", "{1}:{15}"]}
+      ]
+    },
+    "1014": {
+      "name": "Griamore",
+      "engravings": [
+        {"id": "epeq_griamore_a", "grade": "SR", "maxLv": 3, "values": []},
+        {"id": "epeq_griamore_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{10%}", "{1}:{10}"]},
+        {"id": "epeq_griamore_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}"]}
+      ]
+    },
+    "1015": {
+      "name": "Bug",
+      "engravings": [
+        {"id": "epeq_bug_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{10}", "{1}:{25}"]},
+        {"id": "epeq_bug_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{10}", "{1}:{12}"]},
+        {"id": "epeq_bug_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{8}", "{1}:{14}"]}
+      ]
+    },
+    "1016": {
+      "name": "Jericho",
+      "engravings": [
+        {"id": "epeq_jericho_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{10%}", "{1}:{10}", "{2}:{25}"]},
+        {"id": "epeq_jericho_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{10}"]},
+        {"id": "epeq_jericho_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}"]}
+      ]
+    },
+    "1018": {
+      "name": "Guila",
+      "engravings": [
+        {"id": "epeq_guila_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{20}"]},
+        {"id": "epeq_guila_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{30}", "{1}:{30}"]},
+        {"id": "epeq_guila_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{10}"]}
+      ]
+    },
+    "1019": {
+      "name": "Diane",
+      "engravings": [
+        {"id": "epeq_diane_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{15}", "{1}:{20}"]},
+        {"id": "epeq_diane_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{10}"]},
+        {"id": "epeq_diane_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}", "{1}:{5}"]}
+      ]
+    },
+    "1025": {
+      "name": "Manny",
+      "engravings": [
+        {"id": "epeq_manny_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{5}", "{1}:{20}", "{2}:{30}"]},
+        {"id": "epeq_manny_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}"]},
+        {"id": "epeq_manny_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{10}", "{1}:{20}"]}
+      ]
+    },
+    "1026": {
+      "name": "Drake",
+      "engravings": [
+        {"id": "epeq_drake_a", "grade": "SR", "maxLv": 3, "values": ["{0}:{15}"]},
+        {"id": "epeq_drake_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}"]},
+        {"id": "epeq_drake_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{15}", "{1}:{20}"]}
+      ]
+    },
+    "1028": {
+      "name": "Daisy",
+      "engravings": [
+        {"id": "epeq_daisy_b", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}"]},
+        {"id": "epeq_daisy_c", "grade": "SSR", "maxLv": 3, "values": ["{0}:{20}", "{1}:{30}", "{2}:{10}"]}
+      ]
+    }
+  },
+  "setPassives": [
+    {"id": "epset_a", "name": "Set A", "icon": "equippassive_armor_a", "maxLv": 3, "values": ["{0}:{1}", "{1}:{10}", "{2}:{20}"]},
+    {"id": "epset_b", "name": "Set B", "icon": "equippassive_armor_b", "maxLv": 3, "values": ["{0}:{20}"]},
+    {"id": "epset_d", "name": "Set D", "icon": "equippassive_armor_d", "maxLv": 3, "values": ["{0}:{10%}", "{1}:{10}", "{2}:{15}"]},
+    {"id": "epset_e", "name": "Set E", "icon": "equippassive_armor_e", "maxLv": 3, "values": ["{0}:{6}", "{1}:{10}", "{2}:{20}"]},
+    {"id": "epset_scale_1", "name": "Scale Set 1", "icon": "equippassive_armor_v", "maxLv": 3, "values": ["{0}:{20}"]},
+    {"id": "epset_scale_2", "name": "Scale Set 2", "icon": "equippassive_armor_v", "maxLv": 3, "values": ["{0}:{20}"]},
+    {"id": "epset_scale_3", "name": "Scale Set 3", "icon": "equippassive_armor_v", "maxLv": 3, "values": ["{0}:{20}"]},
+    {"id": "epset_g", "name": "Set G", "icon": "equippassive_armor_g", "maxLv": 3, "values": ["{0}:{20}", "{1}:{30}"]},
+    {"id": "epset_u", "name": "Set U", "icon": "equippassive_armor_u", "maxLv": 3, "values": ["{0}:{50%}"]},
+    {"id": "epset_s_1", "name": "Set S1", "icon": "equippassive_armor_s", "maxLv": 3, "values": ["{0}:{5}", "{1}:{10}"]},
+    {"id": "epset_s_2", "name": "Set S2", "icon": "equippassive_armor_s", "maxLv": 3, "values": ["{0}:{5}", "{1}:{10}"]},
+    {"id": "epset_h_1", "name": "Set H1", "icon": "equippassive_armor_h", "maxLv": 3, "values": ["{0}:{3%}", "{1}:{3}"]},
+    {"id": "epset_h_2", "name": "Set H2", "icon": "equippassive_armor_h", "maxLv": 3, "values": ["{0}:{3%}", "{1}:{3}", "{2}:{8}"]}
+  ],
+  "cores": [
+    {"id": "core_attack", "name": "Attack Core", "icon": "icon_item_core_attack", "maxLv": 5},
+    {"id": "core_sharp", "name": "Sharp Core", "icon": "icon_item_core_sharp", "maxLv": 5},
+    {"id": "core_pierce", "name": "Pierce Core", "icon": "icon_item_core_pierce", "maxLv": 5},
+    {"id": "core_iron", "name": "Iron Core", "icon": "icon_item_core_iron", "maxLv": 5},
+    {"id": "core_mount", "name": "Mount Core", "icon": "icon_item_core_mount", "maxLv": 5},
+    {"id": "core_endure", "name": "Endure Core", "icon": "icon_item_core_endure", "maxLv": 5},
+    {"id": "core_destroy", "name": "Destroy Core", "icon": "icon_item_core_destroy", "maxLv": 5},
+    {"id": "core_barrier", "name": "Barrier Core", "icon": "icon_item_core_barrier", "maxLv": 5},
+    {"id": "core_rescue", "name": "Rescue Core", "icon": "icon_item_core_rescue", "maxLv": 5},
+    {"id": "core_guard", "name": "Guard Core", "icon": "icon_item_core_guard", "maxLv": 5},
+    {"id": "core_suppress", "name": "Suppress Core", "icon": "icon_item_core_suppress", "maxLv": 5},
+    {"id": "core_snipe", "name": "Snipe Core", "icon": "icon_item_core_snipe", "maxLv": 5},
+    {"id": "core_recycle", "name": "Recycle Core", "icon": "icon_item_core_recycle", "maxLv": 5},
+    {"id": "core_crazy", "name": "Crazy Core", "icon": "icon_item_core_crazy", "maxLv": 5},
+    {"id": "core_rapid", "name": "Rapid Core", "icon": "icon_item_core_rapid", "maxLv": 5},
+    {"id": "core_lightning", "name": "Lightning Core", "icon": "icon_item_core_lightning", "maxLv": 5},
+    {"id": "core_frostbite", "name": "Frostbite Core", "icon": "icon_item_core_frostbite", "maxLv": 5},
+    {"id": "core_abyss", "name": "Abyss Core", "icon": "icon_item_core_abyss", "maxLv": 5},
+    {"id": "core_weak", "name": "Weak Core", "icon": "icon_item_core_weak", "maxLv": 5},
+    {"id": "core_icebreak", "name": "Icebreak Core", "icon": "icon_item_core_icebreak", "maxLv": 5},
+    {"id": "core_expand", "name": "Expand Core", "icon": "icon_item_core_expand", "maxLv": 5}
+  ],
+  "sourceFiles": [
+    "ItemTable_Equip_Passive_Base.json",
+    "ItemTable_Equip_Passive_Group.json",
+    "ItemTable_Equip_Core_Base.json",
+    "ItemTable_Equip_Core_Group.json"
+  ]
+}

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7DS Database - Passifs</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .page-hero { background:linear-gradient(135deg,#0f0f23,#1a1a2e,#1f2d4e); padding:3rem 2rem 2rem; text-align:center; border-bottom:2px solid rgba(100,180,255,0.3); }
+        .page-hero h2 { font-size:2.4rem; border:none; padding:0; margin-bottom:.5rem; background:linear-gradient(90deg,#64b4ff,#ffd700); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .page-hero p { color:#a0a0a0; font-size:1rem; }
+
+        .filter-bar { display:flex; gap:.75rem; padding:.75rem 2rem; background:#0f0f23; flex-wrap:wrap; align-items:center; position:sticky; top:54px; z-index:90; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .filter-bar select, .filter-bar input { padding:.45rem .8rem; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:#16213e; color:#eaeaea; font-size:.9rem; cursor:pointer; }
+        .filter-bar select:focus, .filter-bar input:focus { outline:none; border-color:#64b4ff; }
+        .filter-group { display:flex; align-items:center; gap:.4rem; }
+        .filter-group label { color:#a0a0a0; font-size:.82rem; white-space:nowrap; }
+        .count-badge { color:#a0a0a0; font-size:.85rem; margin-left:auto; }
+
+        .sections-wrapper { padding:1.5rem 2rem 3rem; }
+
+        .cat-section { margin-bottom:2.5rem; }
+        .cat-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; padding-bottom:.5rem; border-bottom:2px solid rgba(100,180,255,0.2); }
+        .cat-count { font-size:.75rem; color:#a0a0a0; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:.1rem .45rem; }
+
+        .eng-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:1rem; }
+
+        /* ── Card avec costume (passifs personnage) ── */
+        .eng-card { background:#16213e; border-radius:12px; border:1px solid rgba(255,255,255,0.08); overflow:hidden; transition:border-color .2s, box-shadow .2s; }
+        .eng-card.cat-char   { border-color:rgba(233,69,96,0.25); }
+        .eng-card.cat-char:hover { border-color:#e9456077; box-shadow:0 6px 24px rgba(233,69,96,0.12); }
+        .eng-card.cat-boss   { border-color:rgba(180,100,255,0.2); }
+        .eng-card.cat-boss:hover { border-color:#b464ff77; box-shadow:0 6px 20px rgba(180,100,255,0.1); }
+        .eng-card.cat-set    { border-color:rgba(255,215,0,0.15); }
+        .eng-card.cat-set:hover { border-color:#ffd70077; box-shadow:0 6px 20px rgba(255,215,0,0.08); }
+        .eng-card:not(.cat-char):not(.cat-boss):not(.cat-set):hover { border-color:#64b4ff55; box-shadow:0 6px 20px rgba(100,180,255,0.1); }
+
+        /* Layout avec tenue : côte à côte */
+        .eng-card-costume { display:flex; min-height:160px; cursor:pointer; user-select:none; }
+        .eng-costume-col { width:110px; flex-shrink:0; position:relative; background:#0d1228; overflow:hidden; }
+        .eng-costume-img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; }
+        .eng-costume-col-empty { display:flex; align-items:center; justify-content:center; font-size:2rem; }
+        .eng-content-col { flex:1; min-width:0; display:flex; flex-direction:column; padding:.75rem .85rem .7rem; }
+        .eng-cos-name { font-size:.85rem; font-weight:700; margin-bottom:.5rem; line-height:1.2; }
+        .eng-cos-name.grade5 { color:#ffd700; }
+        .eng-cos-name.grade4 { color:#b87fff; }
+        .eng-cos-name.grade3 { color:#64b4ff; }
+        .eng-passive-box { background:#0f0f23; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:.5rem .65rem; flex:1; display:flex; flex-direction:column; gap:.4rem; }
+        .eng-passive-head { display:flex; align-items:center; gap:.5rem; }
+        .eng-icon-sm { width:32px; height:32px; border-radius:7px; background:#16213e; border:1px solid rgba(255,255,255,0.1); object-fit:contain; flex-shrink:0; }
+        .eng-icon-sm-ph { width:32px; height:32px; border-radius:7px; background:#16213e; border:1px solid rgba(255,255,255,0.1); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.9rem; }
+        .eng-passive-title { flex:1; min-width:0; }
+        .eng-name { font-size:.88rem; font-weight:600; color:#eaeaea; }
+        .eng-meta { display:flex; gap:.3rem; flex-wrap:wrap; align-items:center; margin-top:.15rem; }
+        .eng-maxlv { font-size:.65rem; padding:.1rem .35rem; border-radius:4px; background:rgba(100,180,255,0.12); color:#64b4ff; border:1px solid rgba(100,180,255,0.2); }
+        .eng-passive-desc { font-size:.75rem; color:#ccc; line-height:1.45; white-space:pre-line; border-top:1px solid rgba(255,255,255,0.06); padding-top:.35rem; }
+        .eng-chevron { color:#a0a0a0; font-size:.75rem; flex-shrink:0; transition:transform .2s; }
+        .eng-card.expanded .eng-chevron { transform:rotate(180deg); }
+
+        /* Layout sans tenue (arme, boss, set) */
+        .eng-head { padding:.85rem 1rem .65rem; display:flex; align-items:center; gap:.7rem; cursor:pointer; user-select:none; }
+        .eng-icon { width:44px; height:44px; border-radius:10px; background:#0f0f23; border:1px solid rgba(255,255,255,0.1); object-fit:contain; flex-shrink:0; }
+        .eng-icon-placeholder { width:44px; height:44px; border-radius:10px; background:#0f0f23; border:1px solid rgba(255,255,255,0.1); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+        .eng-title { flex:1; min-width:0; }
+
+        .tag { font-size:.7rem; padding:.1rem .4rem; border-radius:5px; border:1px solid; }
+        .tag-weapon { background:rgba(255,120,50,.1); color:#ff8042; border-color:rgba(255,120,50,.25); }
+        .tag-char   { background:rgba(233,69,96,.1); color:#e94560; border-color:rgba(233,69,96,.25); }
+        .tag-boss   { background:rgba(180,100,255,.1); color:#b464ff; border-color:rgba(180,100,255,.25); }
+        .tag-set    { background:rgba(255,215,0,.1); color:#ffd700; border-color:rgba(255,215,0,.2); }
+
+        .eng-body { border-top:1px solid rgba(255,255,255,0.06); display:none; }
+        .eng-card.expanded .eng-body { display:block; }
+
+        .eng-levels { }
+        .level-row { display:flex; gap:.6rem; padding:.5rem 1rem; border-bottom:1px solid rgba(255,255,255,0.04); align-items:flex-start; font-size:.8rem; }
+        .level-row:last-child { border-bottom:none; }
+        .lv-badge { min-width:2.2rem; text-align:center; font-weight:700; color:#64b4ff; font-size:.75rem; padding:.1rem .3rem; border-radius:4px; background:rgba(100,180,255,0.1); flex-shrink:0; }
+        .lv-badge.lv-max { color:#ffd700; background:rgba(255,215,0,0.12); }
+        .lv-desc { color:#ccc; line-height:1.5; white-space:pre-line; }
+        .levels-collapsed .level-row:not(.lv-max-row) { display:none; }
+        .toggle-levels-btn { width:100%; padding:.35rem; font-size:.75rem; color:#64b4ff; background:none; border:none; border-top:1px solid rgba(255,255,255,0.06); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.3rem; }
+        .toggle-levels-btn:hover { background:rgba(100,180,255,0.05); }
+
+        /* Equipment section */
+        .equip-section { border-top:1px solid rgba(255,255,255,0.08); padding:.6rem 1rem .8rem; background:rgba(0,0,0,0.15); }
+        .equip-section-title { font-size:.72rem; color:#a0a0a0; text-transform:uppercase; letter-spacing:.05em; margin-bottom:.5rem; }
+        .equip-list { display:flex; flex-direction:column; gap:.4rem; }
+        .equip-item { display:flex; align-items:center; gap:.6rem; padding:.4rem .5rem; background:#0f0f23; border-radius:8px; border:1px solid rgba(255,255,255,0.06); }
+        .equip-item-icon { width:36px; height:36px; border-radius:6px; object-fit:contain; background:#16213e; flex-shrink:0; }
+        .equip-item-icon-ph { width:36px; height:36px; border-radius:6px; background:#16213e; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.9rem; }
+        .equip-item-info { flex:1; min-width:0; }
+        .equip-item-name { font-size:.8rem; color:#eaeaea; font-weight:500; }
+        .equip-item-meta { display:flex; gap:.3rem; flex-wrap:wrap; margin-top:.15rem; }
+        .equip-grade { font-size:.65rem; padding:.05rem .3rem; border-radius:4px; }
+        .grade-grade5 { background:rgba(255,215,0,.12); color:#ffd700; border:1px solid rgba(255,215,0,.2); }
+        .grade-grade4 { background:rgba(150,100,255,.12); color:#a064ff; border:1px solid rgba(150,100,255,.2); }
+        .grade-grade3 { background:rgba(100,180,255,.12); color:#64b4ff; border:1px solid rgba(100,180,255,.2); }
+        .equip-char-tag { font-size:.65rem; padding:.05rem .3rem; border-radius:4px; background:rgba(233,69,96,.1); color:#e94560; border:1px solid rgba(233,69,96,.2); }
+        .equip-type-tag { font-size:.65rem; padding:.05rem .3rem; border-radius:4px; background:rgba(255,255,255,.05); color:#a0a0a0; border:1px solid rgba(255,255,255,.1); }
+
+        .no-results { text-align:center; padding:3rem; color:#666; }
+        .cat-section.hidden { display:none; }
+        .eng-card.hidden { display:none; }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <h1>7DS Database</h1>
+        <p>Base de données complète du jeu Seven Deadly Sins</p>
+    </div>
+</header>
+<nav>
+    <ul>
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="index.html">Personnages</a></li>
+        <li><a href="index.html">Monstres</a></li>
+        <li><a href="index.html">Statistiques</a></li>
+        <li><a href="index.html">PvP</a></li>
+        <li><a href="passifs.html" class="active">Passifs</a></li>
+    </ul>
+</nav>
+<div class="page-hero">
+    <h2>Passifs d'équipement</h2>
+    <p>Stats par niveau — cliquez sur un passif pour voir les équipements qui le donnent</p>
+</div>
+<div class="filter-bar">
+    <div class="filter-group"><label>Catégorie</label>
+        <select id="f-cat">
+            <option value="">Toutes</option>
+            <option value="weapon">Arme</option>
+            <option value="char">Personnage</option>
+            <option value="boss">Boss</option>
+            <option value="set">Set</option>
+        </select>
+    </div>
+    <div class="filter-group"><label>Personnage</label>
+        <select id="f-char"><option value="">Tous</option></select>
+    </div>
+    <div class="filter-group"><label>🔍</label>
+        <input type="text" id="f-search" placeholder="Rechercher..." style="min-width:160px">
+    </div>
+    <span class="count-badge" id="f-count"></span>
+</div>
+<div class="sections-wrapper" id="sections-wrapper"></div>
+<footer>
+    <p>7DS Database – Données extraites du jeu Seven Deadly Sins</p>
+</footer>
+<script src="js/engravings_data.js"></script>
+<script>
+const CATS = [
+    { id:'weapon', label:'Passifs Arme' },
+    { id:'char',   label:'Passifs Personnage' },
+    { id:'boss',   label:'Boss Drops' },
+    { id:'set',    label:'Passifs Set' },
+];
+const CAT_FR = { weapon:'Arme', char:'Personnage', boss:'Boss', set:'Set' };
+const CAT_ICONS = { weapon:'⚔️', char:'🛡️', boss:'👹', set:'✨' };
+
+const CHAR_DISPLAY = {
+    '1001':'Tristan','1002':'Tioré','1003':'Dreydrin','1004':'Hauser',
+    '1005':'Meliodas','1006':'Gilthunder','1009':'Elaine','1010':'King',
+    '1011':'Dreyfus','1012':'Hendrickson','1013':'Slader','1014':'Griamor',
+    '1015':'Bug','1016':'Jericho','1018':'Guila','1019':'Diane',
+    '1025':'Mannie','1026':'Drake','1027':'Clotho','1028':'Daisy',
+    tristan:'Tristan', tioreh:'Tioré', dreydrin:'Dreydrin', howzer:'Hauser',
+    meliodas:'Meliodas', gilthunder:'Gilthunder', elaine:'Elaine', king:'King',
+    dreyfus:'Dreyfus', hendrickson:'Hendrickson', slader:'Slader', griamore:'Griamor',
+    bug:'Bug', jericho:'Jericho', guila:'Guila', diane:'Diane',
+    manny:'Mannie', drake:'Drake', klotho:'Clotho', daisy:'Daisy',
+    longdead:'Longdead', spiderqueen:'Reine Araignée', caveguardian:'Gardien des Cavernes',
+    albion:'Albion', ancientdragon:'Dragon Ancien', warden:'Gardien',
+};
+
+const GRADE_LABEL = { grade5:'★5', grade4:'★4', grade3:'★3', grade2:'★2', grade1:'★1' };
+
+function buildEquipSection(engId) {
+    const items = EQUIP_MAP[engId];
+    if (!items || items.length === 0) return '';
+
+    const rows = items.map(it => {
+        const icon = it.icon
+            ? '<img class="equip-item-icon" src="' + it.icon + '" alt="">'
+            : '<div class="equip-item-icon-ph">🗡️</div>';
+        const gradeLabel = GRADE_LABEL[it.grade] || it.grade;
+        const gradeTag = it.grade ? '<span class="equip-grade ' + it.grade + '">' + gradeLabel + '</span>' : '';
+        const typeTag = it.type ? '<span class="equip-type-tag">' + it.type + '</span>' : '';
+        const charTags = (it.chars || []).map(c => {
+            const n = CHAR_DISPLAY[c] || c;
+            return '<span class="equip-char-tag">' + n + '</span>';
+        }).join('');
+        return '<div class="equip-item">' + icon +
+            '<div class="equip-item-info">' +
+                '<div class="equip-item-name">' + it.name + '</div>' +
+                '<div class="equip-item-meta">' + gradeTag + typeTag + charTags + '</div>' +
+            '</div></div>';
+    }).join('');
+
+    return '<div class="equip-section"><div class="equip-section-title">Obtenu via</div><div class="equip-list">' + rows + '</div></div>';
+}
+
+function buildLevels(eng) {
+    const maxLv = eng.maxLv;
+    if (!eng.levels || eng.levels.length === 0) return '';
+    let html = '<div class="eng-levels levels-collapsed">';
+    eng.levels.forEach(function(lv) {
+        const isMax = lv.lv === maxLv;
+        html += '<div class="level-row' + (isMax?' lv-max-row':'') + '">' +
+            '<span class="lv-badge' + (isMax?' lv-max':'') + '">Lv' + lv.lv + '</span>' +
+            '<span class="lv-desc">' + lv.desc + '</span>' +
+            '</div>';
+    });
+    if (eng.levels.length > 1) {
+        html += '<button class="toggle-levels-btn" onclick="toggleLevels(this)">▼ Voir tous les niveaux (' + eng.levels.length + ')</button>';
+    }
+    return html + '</div>';
+}
+
+function buildSideLayout(eng, leftImg, leftFallback, titleHtml) {
+    // Shared layout: big image left, title + passive box right
+    const imgHtml = leftImg
+        ? '<img class="eng-costume-img" src="' + leftImg + '" alt="">'
+        : '<div class="eng-costume-col-empty">' + leftFallback + '</div>';
+    const passifIcon = eng.icon
+        ? '<img class="eng-icon-sm" src="' + eng.icon + '" alt="">'
+        : '<div class="eng-icon-sm-ph">' + (CAT_ICONS[eng.cat]||'📜') + '</div>';
+    const tag = '<span class="tag tag-' + eng.cat + '">' + (CAT_FR[eng.cat]||eng.cat) + '</span>';
+    const maxDesc = eng.levels.find(function(l){ return l.lv === eng.maxLv; });
+    const descHtml = maxDesc ? '<div class="eng-passive-desc">' + maxDesc.desc + '</div>' : '';
+
+    return '<div class="eng-card-costume" onclick="toggleCard(this)">' +
+        '<div class="eng-costume-col">' + imgHtml + '</div>' +
+        '<div class="eng-content-col">' +
+            titleHtml +
+            '<div class="eng-passive-box">' +
+                '<div class="eng-passive-head">' +
+                    passifIcon +
+                    '<div class="eng-passive-title">' +
+                        '<div class="eng-name">' + eng.name + '</div>' +
+                        '<div class="eng-meta">' + tag + '<span class="eng-maxlv">Max Lv' + eng.maxLv + '</span></div>' +
+                    '</div>' +
+                    '<span class="eng-chevron">▼</span>' +
+                '</div>' +
+                descHtml +
+            '</div>' +
+        '</div>' +
+    '</div>';
+}
+
+function buildCard(eng) {
+    const cos = COSTUME_MAP[eng.id];
+    const boss = BOSS_MAP[eng.id];
+    const catCls = eng.cat==='char'?'cat-char':eng.cat==='boss'?'cat-boss':eng.cat==='set'?'cat-set':'';
+    const searchVal = (eng.name.toLowerCase() + ' ' + eng.id.toLowerCase() + ' ' + (eng.char||'')).replace(/"/g,'');
+    const equipHtml = buildEquipSection(eng.id);
+    const levelsHtml = buildLevels(eng);
+    const tag = '<span class="tag tag-' + eng.cat + '">' + (CAT_FR[eng.cat]||eng.cat) + '</span>';
+    const charTag = eng.char ? '<span class="tag tag-' + eng.cat + '" style="opacity:.7">' + (CHAR_DISPLAY[eng.char]||eng.char) + '</span>' : '';
+    const maxDesc = eng.levels.find(function(l){ return l.lv === eng.maxLv; });
+    const descHtml = maxDesc ? '<div class="eng-passive-desc" style="margin-top:.4rem;font-size:.78rem;color:#ccc;line-height:1.45;white-space:pre-line">' + maxDesc.desc + '</div>' : '';
+
+    let header, body;
+
+    if (cos) {
+        const gradeClass = cos.grade || '';
+        const titleHtml = '<div class="eng-cos-name ' + gradeClass + '">' + cos.name + '</div>';
+        header = buildSideLayout(eng, cos.icon, '👤', titleHtml);
+        body = '<div class="eng-body">' + levelsHtml + equipHtml + '</div>';
+
+    } else if (boss) {
+        const titleHtml = '<div class="eng-cos-name" style="color:#b464ff">' + boss.name + '</div>';
+        header = buildSideLayout(eng, boss.icon, '👹', titleHtml);
+        body = '<div class="eng-body">' + levelsHtml + equipHtml + '</div>';
+
+    } else {
+        // Layout compact (arme, set) : description visible inline
+        const iconHtml = eng.icon
+            ? '<img class="eng-icon" src="' + eng.icon + '" alt="">'
+            : '<div class="eng-icon-placeholder">' + (CAT_ICONS[eng.cat]||'📜') + '</div>';
+        header = '<div class="eng-head" onclick="toggleCard(this)">' +
+            iconHtml +
+            '<div class="eng-title">' +
+                '<div class="eng-name">' + eng.name + '</div>' +
+                '<div class="eng-meta">' + tag + charTag + '<span class="eng-maxlv">Max Lv' + eng.maxLv + '</span></div>' +
+                descHtml +
+            '</div>' +
+            '<span class="eng-chevron" style="align-self:flex-start;margin-top:.15rem">▼</span>' +
+        '</div>';
+        body = '<div class="eng-body">' + levelsHtml + equipHtml + '</div>';
+    }
+
+    return '<div class="eng-card ' + catCls + '"' +
+        ' data-cat="' + eng.cat + '" data-char="' + (eng.char||'') + '"' +
+        ' data-search="' + searchVal + '">' +
+        header + body +
+        '</div>';
+}
+
+function toggleCard(el) {
+    el.closest('.eng-card').classList.toggle('expanded');
+}
+
+function toggleLevels(btn) {
+    const levels = btn.closest('.eng-levels');
+    const collapsed = levels.classList.contains('levels-collapsed');
+    if (collapsed) {
+        levels.classList.remove('levels-collapsed');
+        btn.textContent = '▲ Réduire les niveaux';
+    } else {
+        levels.classList.add('levels-collapsed');
+        btn.textContent = '▼ Voir tous les niveaux (' + btn.closest('.eng-levels').querySelectorAll('.level-row').length + ')';
+    }
+}
+
+function render() {
+    const catFilter  = document.getElementById('f-cat').value;
+    const charFilter = document.getElementById('f-char').value;
+    const search     = document.getElementById('f-search').value.toLowerCase().trim();
+    const wrapper    = document.getElementById('sections-wrapper');
+
+    let totalVisible = 0;
+    wrapper.innerHTML = CATS.map(function(cat) {
+        if (catFilter && catFilter !== cat.id) return '<div class="cat-section hidden"></div>';
+        let items = ENGRAVINGS.filter(function(e) { return e.cat === cat.id; });
+        if (charFilter) items = items.filter(function(e) { return e.char === charFilter; });
+        if (search) items = items.filter(function(e) {
+            return e.name.toLowerCase().includes(search) ||
+                   e.id.toLowerCase().includes(search) ||
+                   (e.char||'').includes(search);
+        });
+        totalVisible += items.length;
+        const cards = items.map(function(e) { return buildCard(e); }).join('');
+        return '<div class="cat-section">' +
+            '<div class="cat-header">' +
+                '<span>' + CAT_ICONS[cat.id] + ' ' + cat.label + '</span>' +
+                '<span class="cat-count">' + items.length + '</span>' +
+            '</div>' +
+            '<div class="eng-grid">' + (cards || '<div class="no-results">Aucun résultat</div>') + '</div>' +
+            '</div>';
+    }).join('');
+
+    document.getElementById('f-count').textContent = totalVisible + ' passif' + (totalVisible>1?'s':'');
+}
+
+// Init char filter
+const chars = [...new Set(ENGRAVINGS.filter(function(e){return e.char&&e.cat==='char';}).map(function(e){return e.char;}))].sort();
+const sel = document.getElementById('f-char');
+chars.forEach(function(c) {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = CHAR_DISPLAY[c] || c;
+    sel.appendChild(opt);
+});
+
+render();
+document.getElementById('f-cat').addEventListener('change', render);
+document.getElementById('f-char').addEventListener('change', render);
+let deb;
+document.getElementById('f-search').addEventListener('input', function() { clearTimeout(deb); deb = setTimeout(render, 180); });
+</script>
+</body>
+</html>

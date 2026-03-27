@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7DS Database - Seven Deadly Sins Game Data</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>7DS Database</h1>
+            <p>Base de donnees complete du jeu Seven Deadly Sins</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#" class="active" data-section="home">Accueil</a></li>
+            <li><a href="#" data-section="characters">Personnages</a></li>
+            <li><a href="#" data-section="monsters">Monstres</a></li>
+            <li><a href="#" data-section="stats">Statistiques</a></li>
+            <li><a href="#" data-section="pvp">PvP</a></li>
+            <li><a href="#" data-section="loot">Loot</a></li>
+            <li><a href="passifs.html">Passifs</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Section Accueil -->
+        <section id="home" class="section active">
+            <h2>Bienvenue sur 7DS Database</h2>
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <span class="stat-number" id="total-characters">0</span>
+                    <span class="stat-label">Personnages</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="total-costumes">0</span>
+                    <span class="stat-label">Costumes</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="total-weapons">0</span>
+                    <span class="stat-label">Types d'armes</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="total-elements">0</span>
+                    <span class="stat-label">Elements</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="total-monsters">0</span>
+                    <span class="stat-label">Monstres</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Section Personnages -->
+        <section id="characters" class="section">
+            <h2>Liste des Personnages</h2>
+            <div class="filters">
+                <input type="text" id="search-char" placeholder="Rechercher un personnage...">
+                <select id="filter-gender">
+                    <option value="">Tous les genres</option>
+                    <option value="Homme">Homme</option>
+                    <option value="Femme">Femme</option>
+                </select>
+                <select id="filter-element">
+                    <option value="">Tous les elements</option>
+                </select>
+                <select id="filter-role">
+                    <option value="">Tous les roles</option>
+                </select>
+            </div>
+            <div id="characters-list" class="character-grid"></div>
+        </section>
+
+        <!-- Section Monstres -->
+        <section id="monsters" class="section">
+            <h2>Liste des Monstres</h2>
+            <div class="filters">
+                <input type="text" id="search-monster" placeholder="Rechercher un monstre...">
+                <select id="filter-tribe">
+                    <option value="">Toutes les tribus</option>
+                </select>
+                <select id="filter-grade">
+                    <option value="">Tous les grades</option>
+                </select>
+                <select id="filter-group">
+                    <option value="">Tous les groupes</option>
+                </select>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="filter-catchable"> Capturable
+                </label>
+            </div>
+            <div class="monster-count">
+                <span id="monster-count-display">0</span> monstres affiches
+            </div>
+            <div id="monsters-list" class="monster-grid"></div>
+        </section>
+
+        <!-- Section Statistiques -->
+        <section id="stats" class="section">
+            <h2>Comparaison des Statistiques</h2>
+            <div class="stats-comparison">
+                <div class="stat-chart">
+                    <h3>Top Attaque</h3>
+                    <div id="top-attack" class="ranking-list"></div>
+                </div>
+                <div class="stat-chart">
+                    <h3>Top Defense</h3>
+                    <div id="top-defense" class="ranking-list"></div>
+                </div>
+                <div class="stat-chart">
+                    <h3>Top HP</h3>
+                    <div id="top-hp" class="ranking-list"></div>
+                </div>
+                <div class="stat-chart">
+                    <h3>Top Critique</h3>
+                    <div id="top-crit" class="ranking-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Costumes -->
+        <section id="costumes" class="section">
+            <h2>Galerie des Costumes</h2>
+            <div class="filters">
+                <select id="filter-costume-char">
+                    <option value="">Tous les personnages</option>
+                </select>
+            </div>
+            <div id="costumes-list" class="costume-grid"></div>
+        </section>
+
+        <!-- Section PvP -->
+        <section id="pvp" class="section">
+            <h2>Récompenses PvP par Rang</h2>
+            <p class="pvp-subtitle">Récompenses de fin de saison Arena selon votre rang atteint</p>
+            <div id="pvp-tiers" class="pvp-tiers"></div>
+        </section>
+
+        <!-- Section Loot -->
+        <section id="loot" class="section">
+            <h2>Base de données du Loot</h2>
+            <div class="filters">
+                <input type="text" id="search-loot" placeholder="Rechercher un objet...">
+                <select id="filter-loot-grade">
+                    <option value="">Tous les grades</option>
+                    <option value="grade1">Grade 1</option>
+                    <option value="grade2">Grade 2</option>
+                    <option value="grade3">Grade 3</option>
+                    <option value="grade4">Grade 4</option>
+                </select>
+                <select id="filter-loot-type">
+                    <option value="">Tous les types</option>
+                </select>
+            </div>
+            <div class="loot-count"><span id="loot-count-display">0</span> objets</div>
+            <div id="loot-list" class="loot-grid"></div>
+        </section>
+
+        <!-- Modal Sources Loot -->
+        <div id="loot-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <div id="loot-modal-body"></div>
+            </div>
+        </div>
+
+        <!-- Modal Detail Personnage -->
+        <div id="character-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+
+        <!-- Modal Detail Monstre -->
+        <div id="monster-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <div id="monster-modal-body"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>7DS Database - Donnees extraites du jeu Seven Deadly Sins</p>
+        <p>Projet de documentation non-officiel</p>
+    </footer>
+
+    <script src="data/gamedb.js"></script>
+    <script src="js/engravings_data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
