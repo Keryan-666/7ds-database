@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initLootModal();
     renderHome();
     renderPvp();
+
+    // Activate section from URL param (e.g. index.html?section=monsters)
+    const urlSection = new URLSearchParams(window.location.search).get('section');
+    if (urlSection) {
+        const link = document.querySelector('nav a[data-section="' + urlSection + '"]');
+        if (link) link.click();
+    }
 });
 
 // Navigation
@@ -424,15 +431,16 @@ function showMonsterModal(monsterId) {
                 };
                 const hdrs = Array.from({length: maxLvl}, (_, i) =>
                     '<span class="drop-hdr-lvl">N' + (i+1) + '</span>').join('');
-                const rows = monster.drops.map(d =>
-                    '<div class="drop-row">' +
-                    '<span class="drop-name">' +
-                    (d.icon ? '<img src="' + d.icon + '" class="drop-item-icon" alt="">' : '') +
-                    d.name + '</span>' +
+                const rows = monster.drops.map(d => {
+                    const icon = d.type === 'Gold'
+                        ? '<img src="data/pvp_icons/100000101.png" class="drop-item-icon" alt="Gold">'
+                        : (d.icon ? '<img src="' + d.icon + '" class="drop-item-icon" alt="">' : '');
+                    return '<div class="drop-row">' +
+                    '<span class="drop-name">' + icon + d.name + '</span>' +
                     '<span class="drop-rate">' + d.rate_pct + '%</span>' +
                     Array.from({length: maxLvl}, (_, i) => qtyStr(d, i)).join('') +
-                    '</div>'
-                ).join('');
+                    '</div>';
+                }).join('');
                 return '<div class="modal-section"><h3>Butin (' + monster.drops.length + ' items)</h3>' +
                     '<div class="drop-table">' +
                     '<div class="drop-header"><span class="drop-name"></span><span class="drop-rate">Taux</span>' + hdrs + '</div>' +
@@ -451,12 +459,14 @@ function showMonsterModal(monsterId) {
                         return '<span class="drop-lvl">' + (lv.min === lv.max ? lv.min : lv.min + '–' + lv.max) + '</span>';
                     };
                     const hdrs = Array.from({length: maxLvl}, (_, i) => '<span class="drop-hdr-lvl">N' + (i+1) + '</span>').join('');
-                    const rows = drops.map(d =>
-                        '<div class="drop-row"><span class="drop-name">' +
-                        (d.icon ? '<img src="' + d.icon + '" class="drop-item-icon" alt="">' : '') +
+                    const rows = drops.map(d => {
+                        const icon = d.type === 'Gold'
+                            ? '<img src="data/pvp_icons/100000101.png" class="drop-item-icon" alt="Gold">'
+                            : (d.icon ? '<img src="' + d.icon + '" class="drop-item-icon" alt="">' : '');
+                        return '<div class="drop-row"><span class="drop-name">' + icon +
                         d.name + '</span><span class="drop-rate">' + d.rate_pct + '%</span>' +
-                        Array.from({length: maxLvl}, (_, i) => qtyStr(d, i)).join('') + '</div>'
-                    ).join('');
+                        Array.from({length: maxLvl}, (_, i) => qtyStr(d, i)).join('') + '</div>';
+                    }).join('');
                     return '<div class="drop-table"><div class="drop-header"><span class="drop-name"></span><span class="drop-rate">Taux</span>' + hdrs + '</div>' + rows + '</div>';
                 })() : ''}
             </div>
