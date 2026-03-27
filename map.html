@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7DS Database - Carte</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="data/catchable_spawns.js"></script>
+    <script src="data/monster_spawns.js"></script>
+    <style>
+        body { margin: 0; background: #0a0a1a; }
+        #map-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #map {
+            flex: 1;
+            background: #0a0a1a;
+        }
+        .map-hud {
+            position: absolute;
+            z-index: 1000;
+            background: rgba(18,20,40,0.96);
+            border: 1px solid rgba(100,180,255,0.55);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+            border-radius: 8px;
+            padding: 0.5rem 0.9rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #cce4ff;
+        }
+        #coords-display {
+            bottom: 12px;
+            left: 12px;
+        }
+        #click-display {
+            bottom: 12px;
+            left: 260px;
+        }
+        .map-controls {
+            bottom: 50px;
+            right: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            min-width: 210px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .map-controls h3 {
+            margin: 0 0 0.4rem;
+            color: #64b4ff;
+            font-size: 0.9rem;
+        }
+        .marker-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .marker-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.2rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.78rem;
+            gap: 0.5rem;
+        }
+        .marker-item button {
+            background: rgba(255,80,80,0.2);
+            border: 1px solid rgba(255,80,80,0.4);
+            color: #ff8888;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.3rem;
+        }
+        /* Pet filter dropdown */
+        .pet-filter-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255,136,50,0.35);
+            background: rgba(255,136,50,0.08);
+            color: #cce4ff;
+            user-select: none;
+        }
+        .pet-filter-header:hover { background: rgba(255,136,50,0.18); }
+        .pet-filter-header .dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #ff8844; border: 2px solid #fff; flex-shrink: 0;
+        }
+        .pet-filter-header .arrow { margin-left: auto; font-size: 0.65rem; transition: transform 0.15s; }
+        .pet-filter-header.open .arrow { transform: rotate(180deg); }
+        .pet-filter-header.off { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: #666; }
+
+        .pet-dropdown {
+            display: none;
+            flex-direction: column;
+            gap: 0;
+            background: rgba(10,10,26,0.95);
+            border: 1px solid rgba(255,136,50,0.25);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: -0.2rem;
+        }
+        .pet-dropdown.open { display: flex; }
+        .pet-dropdown-actions {
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.3rem 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .pet-dropdown-actions button {
+            flex: 1;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #aaa;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.68rem;
+            padding: 0.15rem 0;
+        }
+        .pet-dropdown-actions button:hover { background: rgba(255,255,255,0.14); color: #fff; }
+        .pet-dropdown-scroll {
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .pet-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: #cce4ff;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            user-select: none;
+        }
+        .pet-option:hover { background: rgba(255,136,50,0.12); }
+        .pet-option.selected { background: rgba(255,136,50,0.2); }
+        .pet-option img { width: 22px; height: 22px; border-radius: 3px; flex-shrink: 0; }
+        .pet-option .no-img { width: 22px; height: 22px; background: #333; border-radius: 3px; flex-shrink: 0; }
+        .pet-option .star { color: #f0c040; font-size: 0.7rem; margin-left: auto; flex-shrink: 0; }
+        .pet-option input[type=checkbox] { flex-shrink: 0; accent-color: #ff8844; }
+
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            border: 1px solid rgba(100,180,255,0.3);
+            background: rgba(100,180,255,0.08);
+            color: #cce4ff;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .layer-toggle:hover { background: rgba(100,180,255,0.18); }
+        .layer-toggle.off {
+            border-color: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.04);
+            color: #666;
+        }
+        .layer-toggle .dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .leaflet-container { cursor: crosshair !important; }
+
+        /* Filtre monstres */
+        .mon-filter-header {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.25rem 0.5rem; border-radius: 5px; cursor: pointer;
+            font-size: 0.8rem; border: 1px solid rgba(180,100,255,0.35);
+            background: rgba(140,60,255,0.08); color: #cce4ff; user-select: none;
+        }
+        .mon-filter-header:hover { background: rgba(140,60,255,0.18); }
+        .mon-filter-header .dot { width:10px;height:10px;border-radius:50%;background:#a060ff;border:2px solid #fff;flex-shrink:0; }
+        .mon-filter-header .arrow { margin-left:auto;font-size:0.65rem;transition:transform 0.15s; }
+        .mon-filter-header.open .arrow { transform:rotate(180deg); }
+        .mon-filter-header.off { border-color:rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:#666; }
+        .mon-filter-dropdown {
+            display: none; flex-direction: column;
+            background: rgba(10,10,26,0.97); border: 1px solid rgba(140,60,255,0.25);
+            border-radius: 6px; overflow: hidden; margin-top: -0.2rem;
+        }
+        .mon-filter-dropdown.open { display: flex; }
+        .mon-filter-search {
+            padding: 0.3rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .mon-filter-search input {
+            width: 100%; box-sizing: border-box;
+            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+            color: #cce4ff; border-radius: 4px; padding: 0.2rem 0.4rem; font-size: 0.75rem;
+        }
+        .mon-filter-list { max-height: 200px; overflow-y: auto; }
+        .mon-option {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.22rem 0.5rem; cursor: pointer; font-size: 0.75rem;
+            color: #cce4ff; border-bottom: 1px solid rgba(255,255,255,0.05); user-select: none;
+        }
+        .mon-option:hover { background: rgba(140,60,255,0.12); }
+        .mon-option.selected { background: rgba(140,60,255,0.25); }
+        .mon-option img { width:20px;height:20px;border-radius:3px;flex-shrink:0; }
+        .mon-option .no-img { width:20px;height:20px;background:#333;border-radius:3px;flex-shrink:0; }
+        .mon-selected-card {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            background: rgba(140,60,255,0.12);
+            border: 1px solid rgba(140,60,255,0.35);
+            border-radius: 6px;
+        }
+        .mon-selected-card img {
+            width: 38px; height: 38px;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+        .mon-selected-card .no-img {
+            width: 38px; height: 38px;
+            background: #333; border-radius: 5px; flex-shrink: 0;
+        }
+        .mon-selected-card span {
+            font-size: 0.78rem; color: #d0a8ff; line-height: 1.3;
+        }
+
+        /* Nav override for fullscreen map */
+        nav { position: sticky; top: 0; z-index: 2000; }
+        main { padding: 0; }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <h1>7DS Database</h1>
+        <p>Carte interactive de Britannia</p>
+    </div>
+</header>
+<nav>
+    <ul>
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="index.html?section=characters">Personnages</a></li>
+        <li><a href="index.html?section=monsters">Monstres</a></li>
+        <li><a href="index.html?section=pvp">PvP</a></li>
+        <li><a href="index.html?section=loot">Loot</a></li>
+        <li><a href="passifs.html">Passifs</a></li>
+        <li><a href="capture.html">Capture</a></li>
+        <li><a href="map.html" class="active">Carte</a></li>
+    </ul>
+</nav>
+
+<div id="map-container">
+    <div id="map"></div>
+
+    <!-- Coordonnées curseur -->
+    <div class="map-hud" id="coords-display">Curseur : —</div>
+
+    <!-- Dernier clic -->
+    <div class="map-hud" id="click-display">Clic : —</div>
+
+    <!-- Panneau filtres + marqueurs -->
+    <div class="map-hud map-controls" id="marker-panel">
+        <h3>Calques</h3>
+        <div id="layer-toggles" style="display:flex;flex-direction:column;gap:0.3rem;margin-bottom:0.6rem;"></div>
+        <h3>Marqueurs</h3>
+        <div class="marker-list" id="marker-list"></div>
+        <div style="margin-top:0.5rem; font-size:0.75rem; color:#888;">
+            Clic droit sur la carte pour ajouter un marqueur
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Carte Leaflet CRS.Simple ──────────────────────────────────────
+const TILE_SIZE = 512;
+const GRID_ROWS = 18;
+const GRID_COLS = 18;
+const MAP_W     = TILE_SIZE * GRID_COLS; // 9216
+const MAP_H     = TILE_SIZE * GRID_ROWS; // 9216
+
+const map = L.map('map', {
+    crs: L.CRS.Simple,
+    minZoom: -4,
+    maxZoom: 3,
+    zoomSnap: 0.5,
+    attributionControl: false,
+});
+
+const bounds = [[0, 0], [MAP_H, MAP_W]];
+
+// ── Tuiles : 324 imageOverlay positionnés précisément ────────────
+// CRS.Simple : [lat=y, lng=x], row 0 de l'image = haut = lat max
+for (let row = 0; row < GRID_ROWS; row++) {
+    for (let col = 0; col < GRID_COLS; col++) {
+        const latMin = MAP_H - (row + 1) * TILE_SIZE;
+        const latMax = MAP_H - row * TILE_SIZE;
+        const lngMin = col * TILE_SIZE;
+        const lngMax = (col + 1) * TILE_SIZE;
+        L.imageOverlay(
+            `data/map_tiles/${col}_${row}.png`,
+            [[latMin, lngMin], [latMax, lngMax]]
+        ).addTo(map);
+    }
+}
+
+map.fitBounds(bounds);
+
+// ── Conversion coordonnées jeu → pixel ───────────────────────────
+// Bounds du monde (depuis sector table zone 50201001)
+const GAME_X_MIN = -691576;
+const GAME_X_MAX =  113589;
+const GAME_Y_MIN = -474514;
+const GAME_Y_MAX =  374887;
+
+// Transformation calibrée sur 2 points connus :
+//   Moonrise Hill      game(-360175, 167717) → px(3802, 6939)
+//   Île du Croissant   game(-333231, 208301) → px(4190, 7550)
+// Régression linéaire sur 3 points (Moonrise Hill, Île du Croissant, Liones-Ouest)
+// Erreur max < 13px sur 9216px
+// Régression linéaire sur 3 points — erreur max 2px sur 9216px
+const CAL = {
+    ax: 0.014371,
+    bx: 8978.90,
+    ay: 0.014361,
+    by: 4528.21,
+};
+
+function gameToLeaflet(gameX, gameY) {
+    const px = CAL.ax * gameX + CAL.bx;
+    const py = CAL.ay * gameY + CAL.by;
+    return L.latLng(MAP_H - py, px);
+}
+
+function leafletToGame(latlng) {
+    const px = latlng.lng;
+    const py = MAP_H - latlng.lat;
+    const gameX = (px - CAL.bx) / CAL.ax;
+    const gameY = (py - CAL.by) / CAL.ay;
+    return { x: Math.round(gameX), y: Math.round(gameY) };
+}
+
+// ── Waypoints du jeu (68 total) ───────────────────────────────────
+const WAYPOINTS = [
+    { name: 'Lac Paynes',                        x: -377954, y:  121876 },
+    { name: 'Habitat de Bigmoss',                x: -359070, y:  110730 },
+    { name: 'Hutte des chasseurs',               x: -357766, y:   96235 },
+    { name: 'Forêt de Liones',                   x: -386000, y:   77116 },
+    { name: 'Plaines de Liones',                 x: -347653, y:   65368 },
+    { name: 'Quartier sud',                      x: -343973, y:   52943 },
+    { name: 'Château de Liones',                 x: -341790, y:   30980 },
+    { name: 'Quartier est',                      x: -312920, y:   33278 },
+    { name: 'Quartier nord',                     x: -340905, y:   -5959 },
+    { name: 'Quartier ouest',                    x: -364300, y:    6700 },
+    { name: 'Plage de Liones',                   x: -375270, y:   -2885 },
+    { name: "Nid d'oiseau géant",                x: -399866, y:   67602 },
+    { name: 'Camp des ours-garous',              x: -405043, y:  114962 },
+    { name: 'Bois de Paynes',                    x: -383129, y:  157098 },
+    { name: 'Île du croissant lunaire',          x: -333231, y:  208302 },
+    { name: "Colline de l'éveil lunaire",        x: -360175, y:  167717 },
+    { name: 'Plage désolée',                     x: -388818, y:  -36492 },
+    { name: 'Colline des os',                    x: -365062, y: -104785 },
+    { name: "Vallon d'Ombrebrise",               x: -426395, y: -150062 },
+    { name: 'Colonie de champignons',            x: -512592, y:  -12263 },
+    { name: 'Terres désolées septentrionales',   x: -509678, y:  -82695 },
+    { name: 'Passage forestier',                 x: -400124, y:  -64984 },
+    { name: 'Côte des rivages venteux',          x: -466040, y: -149604 },
+    { name: 'Forêt de la tentation',             x: -471940, y:   -2140 },
+    { name: 'Bassin de la forêt du roi des fées',x: -435920, y:  -20992 },
+    { name: 'Frontière septentrionale',          x: -432405, y:  -77780 },
+    { name: 'Entrepôt de sang de dragon',        x: -400235, y: -131674 },
+    { name: "Rocher de l'air marin",             x: -544853, y:   27538 },
+    { name: 'Jardin de lumière',                 x: -469162, y:  -28133 },
+    { name: 'Sanctuaire du dragon ancien',       x: -391051, y: -108465 },
+    { name: 'Forêt des souvenirs',               x: -496577, y:  -50178 },
+    { name: 'Tombe des lucioles',                x: -525618, y:  -35860 },
+    { name: "Lac de l'aquarbre",                 x: -446723, y: -103933 },
+    { name: 'Cimetière de bateaux pirates',      x: -488500, y: -195549 },
+    { name: 'Terres désolées occidentales',      x: -376742, y:  -50943 },
+    { name: 'Entrée de la Descente du dragon',   x: -414303, y: -115915 },
+    { name: 'Havre des marées',                  x: -447619, y:   22500 },
+    { name: 'Quartier résidentiel nord',         x: -472732, y:  -96658 },
+    { name: 'Arbre sacré',                       x: -458477, y:  -56577 },
+    { name: 'Antre des pirates',                 x: -445600, y: -181000 },
+    { name: 'Village de Tala',                   x: -224669, y:  -33061 },
+    { name: 'Voie du pèlerin',                   x: -223325, y:  -48473 },
+    { name: 'Vanya',                             x:  -76318, y: -120555 },
+    { name: 'Île des adieux',                    x: -502246, y:  154176 },
+    { name: 'Ruines de Dalmally',                x: -249916, y: -111470 },
+    { name: 'Dunes occidentales',                x: -267022, y:  -89276 },
+    { name: 'Autel de la sagesse',               x: -174214, y: -117343 },
+    { name: 'Montagne du roc',                   x: -172368, y: -143956 },
+    { name: 'Tombe sablonneuse',                 x: -195747, y:  -67380 },
+    { name: 'Route des sables mouvants',         x: -175695, y:  -99257 },
+    { name: 'Entrée de Ferzen',                  x: -354901, y: -121635 },
+    { name: 'Entrée des mines de Ferzen',        x: -368740, y: -160152 },
+    { name: 'Mines de Ferzen',                   x: -360250, y: -170400 },
+    { name: 'Camp de bandits',                   x: -142523, y: -119666 },
+    { name: 'Prison de Baste',                   x: -270854, y:  -45436 },
+    { name: 'Ferzen',                            x: -368791, y: -139711 },
+    { name: 'Dunes orientales',                  x: -151561, y:  -92479 },
+    { name: 'Entrée de tunnel',                  x: -339973, y: -149733 },
+    { name: 'Ruines de la gloire',               x: -171007, y:  -80670 },
+    { name: 'Entrée de temple',                  x: -214245, y: -126568 },
+    { name: "Cascade de l'ancienne forêt",       x: -302602, y: -167455 },
+    { name: 'Vallée frontalière',                x: -252021, y: -152965 },
+    { name: 'Rocher du voyageur',                x: -244385, y:  -78374 },
+    { name: 'Village Oasis',                     x: -210489, y:  -91940 },
+    { name: 'Forêt des rêves blancs',            x: -115186, y:  -69003 },
+    { name: 'Plaines de Vanya',                  x:  -89236, y:  -86770 },
+    { name: 'Vallon du vent tranchant',          x: -111571, y: -155016 },
+    { name: 'Fort Solgales',                     x: -132928, y: -199135 },
+];
+
+const wpIcon = L.icon({
+    iconUrl: 'data/Waypoint_Open.png',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -14],
+});
+
+const waypointLayer = L.layerGroup();
+WAYPOINTS.forEach(wp => {
+    L.marker(gameToLeaflet(wp.x, wp.y), { icon: wpIcon })
+     .bindPopup(`<b>${wp.name}</b><br><small>jeu: (${Math.round(wp.x)}, ${Math.round(wp.y)})</small>`)
+     .addTo(waypointLayer);
+});
+waypointLayer.addTo(map);
+
+// ── Monstres capturables ──────────────────────────────────────────
+// Cluster (mode "tous")
+const petCluster = L.markerClusterGroup({
+    maxClusterRadius: 40,
+    iconCreateFunction(cluster) {
+        const n = cluster.getChildCount();
+        return L.divIcon({
+            html: `<div style="background:rgba(255,136,50,0.85);border:2px solid #fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:bold;color:#fff;">${n}</div>`,
+            className: '', iconSize:[28,28], iconAnchor:[14,14]
+        });
+    }
+});
+
+// Un layerGroup individuel par monstre (mode "sélection")
+const petLayersByIdx = {};
+
+function makePetMarkerIcon(mon, large) {
+    const sz = large ? 40 : 30;
+    const iconHtml = mon.icon
+        ? `<img src="data/pet_icons/${mon.icon}" style="width:${sz}px;height:${sz}px;border-radius:5px;display:block;box-shadow:0 0 4px #000a;">`
+        : `<div style="width:${sz}px;height:${sz}px;background:#555;border-radius:5px;"></div>`;
+    const hiddenBadge = mon.hidden
+        ? `<div style="position:absolute;top:-5px;right:-5px;background:#f0c040;color:#000;border-radius:50%;width:13px;height:13px;font-size:9px;font-weight:bold;display:flex;align-items:center;justify-content:center;">★</div>`
+        : '';
+    return L.divIcon({
+        html: `<div style="position:relative;width:${sz}px;height:${sz}px;">${iconHtml}${hiddenBadge}</div>`,
+        className: '', iconSize:[sz,sz], iconAnchor:[sz/2,sz/2], popupAnchor:[0,-sz/2]
+    });
+}
+
+CATCHABLE_SPAWNS.forEach((mon, idx) => {
+    if (!mon.spawns.length) return;
+    const clusterIcon = makePetMarkerIcon(mon, false);
+    const soloIcon    = makePetMarkerIcon(mon, true);
+
+    // Layer pour le cluster global
+    mon.spawns.forEach(sp => {
+        const hiddenLabel = sp.hidden ? ' <span style="color:#f0c040;">★ Caché</span>' : '';
+        L.marker(gameToLeaflet(sp.x, sp.y), { icon: clusterIcon })
+         .bindPopup(`<b>${mon.name}</b>${hiddenLabel}<br><small>jeu: (${sp.x}, ${sp.y})</small>`)
+         .addTo(petCluster);
+    });
+
+    // Layer individuel (grand) pour la sélection
+    const indivLayer = L.layerGroup();
+    mon.spawns.forEach(sp => {
+        const hiddenLabel = sp.hidden ? ' <span style="color:#f0c040;">★ Caché</span>' : '';
+        L.marker(gameToLeaflet(sp.x, sp.y), { icon: soloIcon })
+         .bindPopup(`<b>${mon.name}</b>${hiddenLabel}<br><small>jeu: (${sp.x}, ${sp.y})</small>`)
+         .addTo(indivLayer);
+    });
+    petLayersByIdx[idx] = indivLayer;
+});
+petCluster.addTo(map);
+let petLayerOn = true;
+
+// ── Calques / filtres ─────────────────────────────────────────────
+const togglesEl = document.getElementById('layer-toggles');
+
+// Waypoints toggle
+(function() {
+    let on = true;
+    const btn = document.createElement('div');
+    btn.className = 'layer-toggle';
+    btn.innerHTML = `<span class="dot" style="background:#64b4ff;border:2px solid #fff;"></span>Waypoints`;
+    btn.addEventListener('click', () => {
+        on = !on;
+        if (on) { waypointLayer.addTo(map); btn.classList.remove('off'); }
+        else    { waypointLayer.remove();   btn.classList.add('off'); }
+    });
+    togglesEl.appendChild(btn);
+})();
+
+// Capturables header + dropdown
+const petSelectedIds = new Set(); // idx des monstres sélectionnés
+
+const petHeader = document.createElement('div');
+petHeader.className = 'pet-filter-header';
+petHeader.innerHTML = `<span class="dot"></span>Capturables<span class="arrow">▼</span>`;
+togglesEl.appendChild(petHeader);
+
+const petDropdown = document.createElement('div');
+petDropdown.className = 'pet-dropdown';
+
+// Boutons Tous / Aucun
+const actions = document.createElement('div');
+actions.className = 'pet-dropdown-actions';
+actions.innerHTML = `<button id="pet-select-all">Tous</button><button id="pet-select-none">Aucun</button>`;
+petDropdown.appendChild(actions);
+
+const scroll = document.createElement('div');
+scroll.className = 'pet-dropdown-scroll';
+
+CATCHABLE_SPAWNS.forEach((mon, idx) => {
+    if (!mon.spawns.length) return;
+    const opt = document.createElement('label');
+    opt.className = 'pet-option';
+    const imgEl = mon.icon
+        ? `<img src="data/pet_icons/${mon.icon}">`
+        : `<span class="no-img"></span>`;
+    const star = mon.hidden ? `<span class="star">★</span>` : '';
+    opt.innerHTML = `<input type="checkbox" data-idx="${idx}">${imgEl}<span>${mon.name}</span>${star}`;
+    scroll.appendChild(opt);
+});
+petDropdown.appendChild(scroll);
+togglesEl.appendChild(petDropdown);
+
+function applyPetFilter() {
+    if (!petLayerOn) return;
+    if (petSelectedIds.size === 0) {
+        // Mode cluster global
+        petCluster.addTo(map);
+        Object.values(petLayersByIdx).forEach(l => l.remove());
+    } else {
+        // Mode individuel : cacher le cluster, montrer uniquement les sélectionnés
+        petCluster.remove();
+        Object.entries(petLayersByIdx).forEach(([i, l]) => {
+            if (petSelectedIds.has(Number(i))) l.addTo(map);
+            else l.remove();
+        });
+    }
+}
+
+// Header : clic sur la flèche = dropdown, clic sur le reste = toggle on/off
+petHeader.querySelector('.arrow').addEventListener('click', (e) => {
+    e.stopPropagation();
+    petDropdown.classList.toggle('open');
+    petHeader.classList.toggle('open');
+});
+
+petHeader.addEventListener('click', () => {
+    petLayerOn = !petLayerOn;
+    petHeader.classList.toggle('off', !petLayerOn);
+    if (petLayerOn) applyPetFilter();
+    else { petCluster.remove(); Object.values(petLayersByIdx).forEach(l => l.remove()); }
+});
+
+// Checkboxes
+scroll.addEventListener('change', (e) => {
+    if (e.target.type !== 'checkbox') return;
+    const idx = Number(e.target.dataset.idx);
+    const opt = e.target.closest('.pet-option');
+    if (e.target.checked) { petSelectedIds.add(idx); opt.classList.add('selected'); }
+    else                  { petSelectedIds.delete(idx); opt.classList.remove('selected'); }
+    applyPetFilter();
+});
+
+actions.querySelector('#pet-select-all').addEventListener('click', () => {
+    scroll.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        cb.checked = true;
+        cb.closest('.pet-option').classList.add('selected');
+        petSelectedIds.add(Number(cb.dataset.idx));
+    });
+    applyPetFilter();
+});
+actions.querySelector('#pet-select-none').addEventListener('click', () => {
+    scroll.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        cb.checked = false;
+        cb.closest('.pet-option').classList.remove('selected');
+    });
+    petSelectedIds.clear();
+    applyPetFilter();
+});
+
+// ── Calque monstres (cercles densité) ────────────────────────────
+// Index MONSTER_SPAWNS par id pour accès rapide
+const monSpawnIndex = {};
+MONSTER_SPAWNS.forEach(m => { monSpawnIndex[m.id] = m; });
+
+let currentMonLayer = null;
+
+function showMonsterOnMap(monsterId) {
+    if (currentMonLayer) { currentMonLayer.remove(); currentMonLayer = null; }
+    const mon = monSpawnIndex[monsterId];
+    if (!mon || !mon.zones.length) return;
+
+    const maxN = Math.max(...mon.zones.map(z => z.n));
+    currentMonLayer = L.layerGroup();
+
+    mon.zones.forEach(z => {
+        const ratio  = z.n / maxN;
+        const radius = 6 + Math.round(ratio * 18);   // 6px → 24px
+        const alpha  = 0.35 + ratio * 0.45;
+        L.circleMarker(gameToLeaflet(z.x, z.y), {
+            radius,
+            color: '#fff',
+            weight: 1,
+            fillColor: '#a060ff',
+            fillOpacity: alpha,
+        }).bindPopup(`<b>${mon.name}</b><br>${z.n} spawn${z.n > 1 ? 's' : ''} dans cette zone`)
+          .addTo(currentMonLayer);
+    });
+    currentMonLayer.addTo(map);
+
+    // Zoom sur l'ensemble des zones
+    const latlngs = mon.zones.map(z => gameToLeaflet(z.x, z.y));
+    map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40], maxZoom: 1 });
+}
+
+// ── Filtre monstres UI ────────────────────────────────────────────
+let monLayerOn = false; // off par défaut (s'active à la sélection)
+
+const monHeader = document.createElement('div');
+monHeader.className = 'mon-filter-header';
+monHeader.innerHTML = `<span class="dot"></span>Monstres<span class="arrow">▼</span>`;
+togglesEl.appendChild(monHeader);
+
+const monSelectedCard = document.createElement('div');
+monSelectedCard.className = 'mon-selected-card';
+togglesEl.appendChild(monSelectedCard);
+
+function setMonSelectedCard(mon) {
+    const imgEl = mon.icon
+        ? `<img src="data/pet_icons/${mon.icon}" onerror="this.style.display='none'">`
+        : `<span class="no-img"></span>`;
+    const count = mon.zones.reduce((s, z) => s + z.n, 0);
+    monSelectedCard.innerHTML = `${imgEl}<span>${mon.name}<br><small style="color:#a080cc;">${count} spawn${count>1?'s':''} · ${mon.zones.length} zone${mon.zones.length>1?'s':''}</small></span>`;
+    monSelectedCard.style.display = 'flex';
+}
+
+const monDropdown = document.createElement('div');
+monDropdown.className = 'mon-filter-dropdown';
+
+const monSearch = document.createElement('div');
+monSearch.className = 'mon-filter-search';
+monSearch.innerHTML = `<input type="text" placeholder="Rechercher un monstre…" id="mon-search-input">`;
+monDropdown.appendChild(monSearch);
+
+const monList = document.createElement('div');
+monList.className = 'mon-filter-list';
+
+let currentMonOption = null;
+MONSTER_SPAWNS.forEach(mon => {
+    const opt = document.createElement('div');
+    opt.className = 'mon-option';
+    opt.dataset.id   = mon.id;
+    opt.dataset.name = mon.name.toLowerCase();
+    const imgEl = mon.icon
+        ? `<img src="data/pet_icons/${mon.icon}" onerror="this.style.display='none'">`
+        : `<span class="no-img"></span>`;
+    opt.innerHTML = `${imgEl}<span>${mon.name}</span>`;
+    opt.addEventListener('click', () => {
+        if (currentMonOption) currentMonOption.classList.remove('selected');
+        opt.classList.add('selected');
+        currentMonOption = opt;
+        monLayerOn = true;
+        monHeader.classList.remove('off');
+        setMonSelectedCard(mon);
+        showMonsterOnMap(mon.id);
+        monDropdown.classList.remove('open');
+        monHeader.classList.remove('open');
+    });
+    monList.appendChild(opt);
+});
+monDropdown.appendChild(monList);
+togglesEl.appendChild(monDropdown);
+
+// Recherche
+document.getElementById('mon-search-input').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    monList.querySelectorAll('.mon-option').forEach(opt => {
+        opt.style.display = opt.dataset.name.includes(q) ? '' : 'none';
+    });
+});
+
+// Header : flèche = dropdown, corps = toggle
+monHeader.querySelector('.arrow').addEventListener('click', e => {
+    e.stopPropagation();
+    monDropdown.classList.toggle('open');
+    monHeader.classList.toggle('open');
+});
+monHeader.addEventListener('click', () => {
+    if (!currentMonLayer) return;
+    monLayerOn = !monLayerOn;
+    monHeader.classList.toggle('off', !monLayerOn);
+    if (monLayerOn) currentMonLayer.addTo(map);
+    else currentMonLayer.remove();
+});
+
+// ── Lecture URL param ?monster=ID (depuis onglet monstres) ────────
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const mid = params.get('monster');
+    if (!mid) return;
+    showMonsterOnMap(mid);
+    monLayerOn = true;
+    const mon = monSpawnIndex[mid];
+    if (mon) {
+        setMonSelectedCard(mon);
+        const opt = monList.querySelector(`.mon-option[data-id="${mid}"]`);
+        if (opt) { opt.classList.add('selected'); currentMonOption = opt; }
+    }
+})();
+
+// ── Affichage coordonnées en temps réel ───────────────────────────
+const coordsEl = document.getElementById('coords-display');
+const clickEl  = document.getElementById('click-display');
+
+map.on('mousemove', (e) => {
+    const px = Math.round(e.latlng.lng);
+    const py = Math.round(MAP_H - e.latlng.lat);
+    const g  = leafletToGame(e.latlng);
+    coordsEl.textContent = `px(${px}, ${py})  |  jeu(${g.x}, ${g.y})`;
+});
+
+// ── Marqueurs ──────────────────────────────────────────────────────
+const markers = [];
+
+map.on('contextmenu', (e) => {
+    const px = Math.round(e.latlng.lng);
+    const py = Math.round(MAP_H - e.latlng.lat);
+
+    const name = prompt('Nom du marqueur :', `Point (${px}, ${py})`);
+    if (name === null) return;
+
+    addMarker(e.latlng, name, px, py);
+    clickEl.textContent = `Marqueur : "${name}" @ px(${px}, ${py})`;
+});
+
+map.on('click', (e) => {
+    const px = Math.round(e.latlng.lng);
+    const py = Math.round(MAP_H - e.latlng.lat);
+    clickEl.textContent = `Clic : px(${px}, ${py})`;
+    console.log(`Clic px: ${px}, ${py}  |  latlng: ${e.latlng.lat.toFixed(1)}, ${e.latlng.lng.toFixed(1)}`);
+});
+
+function addMarker(latlng, name, px, py) {
+    const m = L.marker(latlng).addTo(map);
+    m.bindPopup(`<b>${name}</b><br>px(${px}, ${py})`);
+    markers.push({ latlng, name, px, py, marker: m });
+    renderMarkerList();
+}
+
+function renderMarkerList() {
+    const list = document.getElementById('marker-list');
+    list.innerHTML = markers.map((m, i) =>
+        `<div class="marker-item">
+            <span>${m.name}</span>
+            <span style="color:#888;font-size:0.7rem">(${m.px},${m.py})</span>
+            <button onclick="removeMarker(${i})">✕</button>
+        </div>`
+    ).join('');
+}
+
+function removeMarker(i) {
+    markers[i].marker.remove();
+    markers.splice(i, 1);
+    renderMarkerList();
+}
+
+</script>
+</body>
+</html>

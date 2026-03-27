@@ -349,6 +349,7 @@ function showMonsterModal(monsterId) {
             </div>` : ''}
             <h2 style="position:relative; z-index:1; text-shadow: 0 2px 8px rgba(0,0,0,0.9);">${displayName}</h2>
             <p style="position:relative; z-index:1; color:${gradeColor};">${monster.grade || 'Normal'} · ${formatTribeName(monster.tribe) || '—'}</p>
+            <a href="map.html?monster=${monster.id}" style="position:relative;z-index:1;margin-top:0.4rem;padding:0.25rem 0.8rem;background:rgba(160,96,255,0.25);border:1px solid rgba(160,96,255,0.6);border-radius:5px;color:#c090ff;font-size:0.8rem;text-decoration:none;">🗺 Voir sur la carte</a>
         </div>
         <div class="modal-body">
             <div class="modal-section">
