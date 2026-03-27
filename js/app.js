@@ -2,6 +2,20 @@
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
+    // Déterminer la section à afficher dès le départ (évite le flash accueil)
+    const urlSection = new URLSearchParams(window.location.search).get('section');
+    const initialSection = urlSection || 'home';
+    const initialLink = document.querySelector('nav a[data-section="' + initialSection + '"]');
+    const initialEl   = document.getElementById(initialSection);
+    if (initialLink && initialEl) {
+        initialLink.classList.add('active');
+        initialEl.classList.add('active');
+    } else {
+        // fallback home
+        document.querySelector('nav a[data-section="home"]').classList.add('active');
+        document.getElementById('home').classList.add('active');
+    }
+
     initNavigation();
     initFilters();
     initMonsterFilters();
@@ -11,11 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHome();
     renderPvp();
 
-    // Activate section from URL param (e.g. index.html?section=monsters)
-    const urlSection = new URLSearchParams(window.location.search).get('section');
     if (urlSection) {
-        const link = document.querySelector('nav a[data-section="' + urlSection + '"]');
-        if (link) link.click();
+        switch (urlSection) {
+            case 'characters': renderCharacters(); break;
+            case 'monsters':   renderMonsters();   break;
+            case 'loot':       renderLoot();       break;
+        }
     }
 });
 
@@ -75,9 +90,11 @@ function renderHome() {
     document.getElementById('total-monsters').textContent = meta.total_monsters;
 
     const sinsList = document.getElementById('sins-list');
-    sinsList.innerHTML = GameDB.getCharacters({ special: true })
-        .map(char => createCharacterCard(char)).join('');
-    attachCardListeners();
+    if (sinsList) {
+        sinsList.innerHTML = GameDB.getCharacters({ special: true })
+            .map(char => createCharacterCard(char)).join('');
+        attachCardListeners();
+    }
 }
 
 // Characters section
