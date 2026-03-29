@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7DS Database - Bosses</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/site.js"></script>
+    <style>
+        /* ── Page hero ─────────────────────────────────────────── */
+        .page-hero { padding:2rem 2rem 1.5rem; text-align:center; position:relative; overflow:hidden; }
+        .page-hero::before { content:''; position:absolute; top:0;left:0;right:0;bottom:0; background:radial-gradient(circle at 50% 10%, rgba(226,54,54,0.18), transparent 70%); z-index:-1; }
+        .page-hero h2 { font-family:var(--header-font); font-size:2.4rem; border:none; padding:0; margin-bottom:.25rem; font-weight:800; background:linear-gradient(180deg,#ffffff 0%,#e6c27a 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; display:inline-block; }
+        .page-hero p { color:var(--text-muted); font-size:1.05rem; letter-spacing:1px; }
+
+        /* ── Filter bar ─────────────────────────────────────────── */
+        .filter-bar { display:flex; gap:.75rem; padding:.75rem 2rem; background:rgba(11,14,20,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); flex-wrap:wrap; align-items:center; position:sticky; top:54px; z-index:90; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .filter-bar input { padding:.45rem .8rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-light); font-size:.9rem; min-width:200px; }
+        .filter-bar input:focus { outline:none; border-color:var(--primary-color); }
+        .type-btns { display:flex; gap:.4rem; flex-wrap:wrap; }
+        .type-btn { padding:.35rem .85rem; border-radius:20px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:var(--text-muted); font-size:.82rem; cursor:pointer; transition:all .2s; white-space:nowrap; }
+        .type-btn:hover { border-color:rgba(230,194,122,0.4); color:var(--text-light); }
+        .type-btn.active { border-color:var(--primary-color); color:var(--primary-color); background:rgba(230,194,122,0.1); }
+        .boss-count { color:var(--text-muted); font-size:.85rem; margin-left:auto; white-space:nowrap; }
+
+        /* ── Boss grid ──────────────────────────────────────────── */
+        .boss-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1.25rem; padding:1.75rem 2rem 3rem; }
+        .boss-card { background:rgba(20,24,34,0.95); border:1px solid var(--border-color); border-radius:14px; overflow:hidden; cursor:pointer; transition:transform .2s,border-color .2s,box-shadow .2s; transform:translateZ(0); }
+        .boss-card:hover { transform:translateY(-4px); border-color:rgba(230,194,122,0.45); box-shadow:0 8px 28px rgba(230,194,122,0.1); }
+        .boss-card.type-challenge { border-color:rgba(180,100,255,0.25); }
+        .boss-card.type-challenge:hover { border-color:#b464ff99; box-shadow:0 8px 28px rgba(180,100,255,0.15); }
+        .boss-card.type-dungeon { border-color:rgba(100,180,255,0.2); }
+        .boss-card.type-dungeon:hover { border-color:#64b4ff99; box-shadow:0 8px 28px rgba(100,180,255,0.12); }
+        .boss-card.type-field { border-color:rgba(255,100,100,0.25); }
+        .boss-card.type-field:hover { border-color:#ff646499; box-shadow:0 8px 28px rgba(255,100,100,0.15); }
+
+        .boss-portrait { position:relative; height:160px; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+        .boss-portrait img { max-height:160px; max-width:100%; object-fit:contain; transition:transform .3s; }
+        .boss-card:hover .boss-portrait img { transform:scale(1.06); }
+        .boss-portrait-placeholder { font-size:4rem; opacity:.25; }
+        .boss-type-badge { position:absolute; top:.5rem; left:.5rem; font-size:.65rem; font-weight:700; padding:.2rem .5rem; border-radius:6px; text-transform:uppercase; letter-spacing:.5px; }
+        .badge-challenge { background:rgba(180,100,255,0.3); color:#cc88ff; border:1px solid rgba(180,100,255,0.5); }
+        .badge-dungeon   { background:rgba(100,180,255,0.25); color:#88ccff; border:1px solid rgba(100,180,255,0.4); }
+        .badge-field     { background:rgba(255,100,100,0.25); color:#ff8888; border:1px solid rgba(255,100,100,0.4); }
+
+        .boss-info { padding:.85rem 1rem; }
+        .boss-name { font-weight:700; font-size:.95rem; color:var(--text-light); line-height:1.3; margin-bottom:.35rem; }
+        .boss-sub { display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; }
+        .boss-tribe { font-size:.72rem; padding:.15rem .45rem; border-radius:6px; background:rgba(147,112,219,0.2); color:#bb99ff; border:1px solid rgba(147,112,219,0.35); }
+        .boss-hp { font-size:.78rem; color:var(--text-muted); }
+        .boss-hp span { color:#ff7070; font-weight:600; }
+
+        /* ── Modal ──────────────────────────────────────────────── */
+        #boss-modal .modal-content { max-width:860px; }
+        .boss-modal-header { position:relative; min-height:200px; background:radial-gradient(circle at 50% 0%, rgba(226,54,54,0.18), rgba(5,7,10,0.95) 70%); display:flex; align-items:flex-end; padding:2rem 2rem 1.5rem; gap:1.5rem; border-bottom:1px solid var(--border-color); }
+        .boss-modal-portrait { position:absolute; top:0; right:0; bottom:0; width:50%; display:flex; align-items:center; justify-content:flex-end; overflow:hidden; pointer-events:none; opacity:.3; }
+        .boss-modal-portrait img { max-height:200px; object-fit:contain; mask-image:linear-gradient(to left, black 30%, transparent 100%); -webkit-mask-image:linear-gradient(to left, black 30%, transparent 100%); }
+        .boss-modal-icon { width:80px; height:80px; border-radius:14px; background:rgba(0,0,0,0.5); border:2px solid rgba(255,255,255,0.1); object-fit:contain; flex-shrink:0; }
+        .boss-modal-icon-ph { width:80px; height:80px; border-radius:14px; background:rgba(0,0,0,0.5); border:2px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:2.5rem; flex-shrink:0; }
+        .boss-modal-meta { position:relative; z-index:2; }
+        .boss-modal-name { font-family:var(--header-font); font-size:1.6rem; font-weight:800; color:var(--text-light); line-height:1.2; margin-bottom:.5rem; }
+        .boss-modal-tags { display:flex; gap:.4rem; flex-wrap:wrap; }
+        .boss-modal-tag { font-size:.72rem; padding:.2rem .55rem; border-radius:8px; }
+
+        .boss-modal-body { padding:1.5rem 2rem 2rem; display:flex; flex-direction:column; gap:1.5rem; }
+
+        /* Sections */
+        .bsec-title { font-size:.75rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:.75rem; padding-bottom:.35rem; border-bottom:1px solid rgba(255,255,255,0.07); }
+
+        /* Stats basiques */
+        .boss-base-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:.75rem; }
+        .bstat { background:rgba(0,0,0,0.35); border-radius:10px; padding:.75rem 1rem; border:1px solid rgba(255,255,255,0.06); }
+        .bstat-label { font-size:.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:.2rem; }
+        .bstat-val { font-size:1.25rem; font-weight:700; color:var(--text-light); }
+        .bstat-val.hp-val { color:#ff7070; }
+        .bstat-val.atk-val { color:#ffaa44; }
+        .bstat-val.def-val { color:#64b4ff; }
+
+        /* Party scaling */
+        .scaling-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+        .scaling-table th { padding:.4rem .7rem; text-align:left; color:var(--text-muted); font-weight:600; font-size:.75rem; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .scaling-table td { padding:.5rem .7rem; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-light); }
+        .scaling-table tr:last-child td { border-bottom:none; }
+        .scaling-table tr:hover td { background:rgba(255,255,255,0.03); }
+        .scale-players { color:var(--primary-color); font-weight:700; }
+        .scale-hp { color:#ff7070; }
+        .scale-atk { color:#ffaa44; }
+        .scale-def { color:#64b4ff; }
+        .scale-cur { background:rgba(230,194,122,0.06); }
+
+        /* Elements */
+        .elem-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; }
+        @media(max-width:500px){ .elem-grid { grid-template-columns:repeat(2,1fr); } }
+        .elem-cell { display:flex; flex-direction:column; align-items:center; gap:.25rem; padding:.6rem .4rem; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.25); }
+        .elem-cell.elem-weak     { border-color:rgba(255,140,0,0.5); background:rgba(255,140,0,0.08); }
+        .elem-cell.elem-resist   { border-color:rgba(100,180,255,0.4); background:rgba(100,180,255,0.06); }
+        .elem-cell.elem-immune   { border-color:rgba(100,100,255,0.5); background:rgba(80,80,200,0.12); }
+        .elem-icon { font-size:1.3rem; }
+        .elem-name { font-size:.65rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
+        .elem-val  { font-size:.8rem; font-weight:700; }
+        .elem-weak   .elem-val { color:#ffaa44; }
+        .elem-resist .elem-val { color:#64b4ff; }
+        .elem-immune .elem-val { color:#8888ff; }
+        .elem-neutral .elem-val { color:var(--text-muted); }
+
+        /* Dungeons */
+        .dungeon-diff-btns { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:.75rem; }
+        .dungeon-diff-btn { padding:.3rem .7rem; border-radius:16px; border:1px solid rgba(255,255,255,0.12); background:transparent; color:var(--text-muted); font-size:.78rem; cursor:pointer; transition:all .2s; }
+        .dungeon-diff-btn:hover { border-color:rgba(230,194,122,0.4); color:var(--text-light); }
+        .dungeon-diff-btn.active { border-color:var(--primary-color); color:var(--primary-color); background:rgba(230,194,122,0.1); }
+
+        .dungeon-list { display:flex; flex-direction:column; gap:.5rem; }
+        .dungeon-row { display:flex; align-items:center; gap:.75rem; padding:.7rem 1rem; border-radius:10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); cursor:pointer; transition:border-color .15s, background .15s; }
+        .dungeon-row:hover { border-color:rgba(255,255,255,0.12); }
+        .dungeon-row.selected { border-color:var(--primary-color); background:rgba(230,194,122,0.07); }
+        .dungeon-diff { min-width:80px; font-size:.75rem; font-weight:700; padding:.2rem .5rem; border-radius:6px; text-align:center; }
+        .diff-1 { background:rgba(100,200,100,0.2); color:#88dd88; border:1px solid rgba(100,200,100,0.35); }
+        .diff-2 { background:rgba(100,180,255,0.2); color:#88ccff; border:1px solid rgba(100,180,255,0.35); }
+        .diff-3 { background:rgba(255,170,50,0.2); color:#ffbb66; border:1px solid rgba(255,170,50,0.35); }
+        .diff-4 { background:rgba(255,80,80,0.2); color:#ff8888; border:1px solid rgba(255,80,80,0.35); }
+        .diff-5 { background:rgba(200,50,255,0.2); color:#dd88ff; border:1px solid rgba(200,50,255,0.35); }
+        .dungeon-info { flex:1; font-size:.85rem; color:var(--text-light); }
+        .dungeon-bp { font-size:.75rem; color:var(--text-muted); margin-top:.1rem; }
+        .dungeon-limits { margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:.1rem; }
+        .dungeon-time { font-size:.72rem; color:var(--text-muted); }
+        .dungeon-players { font-size:.72rem; color:var(--text-muted); }
+
+        /* Scaling header info */
+        .scaling-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem; margin-bottom:.75rem; }
+        .scaling-diff-info { font-size:.78rem; color:var(--text-muted); font-style:italic; }
+        .scaling-diff-info span { color:var(--primary-color); font-style:normal; font-weight:600; }
+        .scaling-combat-row { display:flex; align-items:center; gap:.4rem; padding:.45rem .75rem; margin-bottom:.6rem; border-radius:8px; background:rgba(255,170,50,0.07); border:1px solid rgba(255,170,50,0.2); font-size:.82rem; flex-wrap:wrap; }
+        .sc-label { color:var(--text-muted); }
+        .sc-val { font-weight:700; }
+        .acc-val   { color:#ffaa44; }
+        .block-val { color:#64b4ff; }
+
+        /* Keys badge */
+        .boss-keys { font-size:.72rem; padding:.15rem .45rem; border-radius:6px; background:rgba(255,180,50,0.2); color:#ffcc66; border:1px solid rgba(255,180,50,0.35); }
+
+        /* World-level buttons (field boss modal) */
+        .world-level-btns { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:.75rem; }
+        .world-level-btn { padding:.3rem .7rem; border-radius:16px; border:1px solid rgba(255,255,255,0.12); background:transparent; color:var(--text-muted); font-size:.78rem; cursor:pointer; transition:all .2s; }
+        .world-level-btn:hover { border-color:rgba(230,194,122,0.4); color:var(--text-light); }
+        .world-level-btn.active { border-color:var(--primary-color); color:var(--primary-color); background:rgba(230,194,122,0.1); }
+
+        /* Sub-filter buttons */
+        .type-btn.type-sub { font-size:.75rem; padding:.28rem .7rem; opacity:.85; }
+
+        /* No stats placeholder */
+        .no-stats { color:var(--text-muted); font-size:.9rem; font-style:italic; text-align:center; padding:.75rem; }
+
+        /* Responsive */
+        @media(max-width:600px) {
+            .boss-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); padding:1rem; }
+            .boss-modal-header { flex-direction:column; gap:1rem; }
+            .boss-modal-body { padding:1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>7DS Database</h1>
+            <p>Base de donnees complete du jeu Seven Deadly Sins</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html"                    data-i18n="ui.nav.home">Accueil</a></li>
+            <li><a href="index.html?section=characters" data-i18n="ui.nav.characters">Personnages</a></li>
+            <li><a href="index.html?section=monsters"   data-i18n="ui.nav.monsters">Monstres</a></li>
+            <li><a href="index.html?section=pvp"        data-i18n="ui.nav.pvp">PvP</a></li>
+            <li><a href="index.html?section=loot"       data-i18n="ui.nav.loot">Loot</a></li>
+            <li><a href="passifs.html"                  data-i18n="ui.nav.passives">Passifs</a></li>
+            <li><a href="capture.html"                  data-i18n="ui.nav.capture">Capture</a></li>
+            <li><a href="cuisine.html"                  data-i18n="ui.nav.cooking">Cuisine</a></li>
+            <li><a href="map.html"                      data-i18n="ui.nav.map">Carte</a></li>
+            <li><a href="bosses.html" class="active">Bosses</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="page-hero">
+            <h2>Bosses</h2>
+            <p>Stats, résistances élémentaires et adaptation multijoueur</p>
+        </div>
+
+        <div class="filter-bar">
+            <input type="text" id="boss-search" placeholder="Rechercher un boss...">
+            <div class="type-btns">
+                <button class="type-btn active" data-type="">Tous</button>
+                <button class="type-btn" data-type="challenge">Boss de défi</button>
+                <button class="type-btn" data-type="dungeon">Boss de donjon</button>
+                <button class="type-btn" data-type="field">Boss de monde</button>
+                <button class="type-btn type-sub" data-type="field5">↳ 5 clés</button>
+                <button class="type-btn type-sub" data-type="field10">↳ 10 clés</button>
+            </div>
+            <span class="boss-count"><span id="boss-count">0</span> bosses</span>
+        </div>
+
+        <div class="boss-grid" id="boss-grid"></div>
+    </main>
+
+    <!-- Boss Modal -->
+    <div id="boss-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div id="boss-modal-body"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>7DS Database - Donnees extraites du jeu Seven Deadly Sins</p>
+        <p>Projet de documentation non-officiel</p>
+    </footer>
+
+    <script src="data/bosses.js"></script>
+    <script>
+    (() => {
+        // ── Element config ─────────────────────────────────────────
+        const ELEM_CFG = {
+            Default:  { icon: '⚔️', name: 'Physique', color: '#aaa' },
+            Thunder:  { icon: '⚡', name: 'Foudre',   color: '#ffe066' },
+            Wind:     { icon: '🌀', name: 'Vent',     color: '#88ff88' },
+            Fire:     { icon: '🔥', name: 'Feu',      color: '#ff8844' },
+            Ice:      { icon: '❄️', name: 'Glace',    color: '#88ccff' },
+            Earth:    { icon: '🪨', name: 'Terre',    color: '#cc9966' },
+            Dark:     { icon: '🌑', name: 'Ténèbres', color: '#bb88ff' },
+            Holy:     { icon: '✨', name: 'Sacré',    color: '#ffe8a0' },
+        };
+
+        const DIFF_NAMES = { 1:'Facile', 2:'Normal', 3:'Difficile', 4:'Cauchemar', 5:'Infernal' };
+
+        // World level label (grades 2-5 → Monde 1-4)
+        const WORLD_GRADES = { 2:'Monde 1', 3:'Monde 2', 4:'Monde 3', 5:'Monde 4' };
+
+        // ── State ──────────────────────────────────────────────────
+        let _filter = '';
+        let _search = '';
+        let _selectedDiff = null;        // dungeon difficulty in modal
+        let _selectedWorldGrade = null;  // field boss world level grade (2-5)
+
+        // ── Build cards ────────────────────────────────────────────
+        function renderGrid() {
+            const grid = document.getElementById('boss-grid');
+            const filtered = _bosses.filter(b => {
+                if (_filter === 'field5')  { if (b.type !== 'field' || b.keys !== 5)  return false; }
+                else if (_filter === 'field10') { if (b.type !== 'field' || b.keys !== 10) return false; }
+                else if (_filter && b.type !== _filter) return false;
+                if (_search && !b.name.toLowerCase().includes(_search)) return false;
+                return true;
+            });
+            document.getElementById('boss-count').textContent = filtered.length;
+            grid.innerHTML = filtered.map(b => {
+                const hp = b.stats ? b.stats.hp.toLocaleString('fr-FR') : '?';
+                const iconHtml = b.icon
+                    ? `<img src="${b.icon}" alt="${b.name}" loading="lazy">`
+                    : `<div class="boss-portrait-placeholder">👹</div>`;
+                return `<div class="boss-card type-${b.type}" data-id="${b.id}">
+                    <div class="boss-portrait">
+                        ${iconHtml}
+                        <span class="boss-type-badge badge-${b.type}">${b.type_label}</span>
+                    </div>
+                    <div class="boss-info">
+                        <div class="boss-name">${b.name}</div>
+                        <div class="boss-sub">
+                            ${b.tribe ? `<span class="boss-tribe">${b.tribe}</span>` : ''}
+                            ${b.keys ? `<span class="boss-keys">🗝️×${b.keys}</span>` : ''}
+                            <span class="boss-hp">HP : <span>${b.stats ? hp : '?'}</span></span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ── Stats with scaling ─────────────────────────────────────
+        function scaledStat(base, bonus) {
+            return Math.round(base * (1 + bonus / 10000));
+        }
+
+        function getSelectedDungeon(boss) {
+            if (_selectedDiff === null || !boss.dungeons) return null;
+            return boss.dungeons.find(x => x.difficulty === _selectedDiff) || null;
+        }
+
+        function getDiffMult(boss) {
+            if (!boss.diff_scaling) return { hp: 1, atk: 1, def: 1, acc: 1, block: 1 };
+            let gradeKey;
+            if (boss.type === 'field') {
+                if (_selectedWorldGrade === null) return { hp: 1, atk: 1, def: 1, acc: 1, block: 1 };
+                gradeKey = String(_selectedWorldGrade);
+            } else {
+                const dun = getSelectedDungeon(boss);
+                if (!dun) return { hp: 1, atk: 1, def: 1, acc: 1, block: 1 };
+                gradeKey = String(dun.real_grade);
+            }
+            const sc = boss.diff_scaling[gradeKey];
+            if (!sc) return { hp: 1, atk: 1, def: 1, acc: 1, block: 1 };
+            return {
+                hp:    1 + (sc.hp_rate    || 0) / 10000,
+                atk:   1 + (sc.atk_rate   || 0) / 10000,
+                def:   1 + (sc.def_rate   || 0) / 10000,
+                acc:   1 + (sc.acc_rate   || 0) / 10000,
+                block: 1 + (sc.block_rate || 0) / 10000,
+            };
+        }
+
+        function buildScalingTable(boss) {
+            if (!boss.stats) return '<p class="no-stats">Stats non disponibles</p>';
+            const s = boss.stats;
+            const dm = getDiffMult(boss);
+
+            // Diff info line
+            let diffInfo = '';
+            if (boss.type === 'field' && _selectedWorldGrade !== null) {
+                diffInfo = `<div class="scaling-diff-info"><span>${WORLD_GRADES[_selectedWorldGrade] || ('Grade '+_selectedWorldGrade)}</span></div>`;
+            } else {
+                const selDun = getSelectedDungeon(boss);
+                if (selDun) {
+                    const diffName = selDun.stage || DIFF_NAMES[selDun.difficulty] || ('Diff.' + selDun.difficulty);
+                    const bp = selDun.recommend_bp ? ` — BP recommandé : <span>${selDun.recommend_bp.toLocaleString('fr-FR')}</span>` : '';
+                    diffInfo = `<div class="scaling-diff-info"><span>${diffName}</span>${bp}</div>`;
+                }
+            }
+
+            // Show acc/block scaling if non-trivial (different from x1.0)
+            const showAcc   = dm.acc   > 1.001 || dm.block > 1.001;
+            const accPct    = dm.acc   > 1 ? `+${((dm.acc-1)*100).toFixed(0)}%`   : '—';
+            const blockPct  = dm.block > 1 ? `+${((dm.block-1)*100).toFixed(0)}%` : '—';
+            const combatExtra = showAcc
+                ? `<div class="scaling-combat-row">
+                    <span class="sc-label">Précision (dégâts)</span><span class="sc-val acc-val">${accPct}</span>
+                    <span class="sc-label" style="margin-left:1.2rem">Blocage</span><span class="sc-val block-val">${blockPct}</span>
+                   </div>`
+                : '';
+
+            const rows = _party_scaling.map(p => {
+                const hp  = Math.round(scaledStat(s.hp,  p.hp_bonus)  * dm.hp).toLocaleString('fr-FR');
+                const atk = Math.round(scaledStat(s.atk, p.atk_bonus) * dm.atk).toLocaleString('fr-FR');
+                const def = Math.round(s.def * dm.def).toLocaleString('fr-FR');
+                return `<tr>
+                    <td class="scale-players">${p.players}J</td>
+                    <td class="scale-hp">${hp}</td>
+                    <td class="scale-atk">${atk}</td>
+                    <td class="scale-def">${def}</td>
+                </tr>`;
+            }).join('');
+            return `<div class="scaling-header">
+                <div class="bsec-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0">Adaptation multijoueur</div>
+                ${diffInfo}
+            </div>
+            ${combatExtra}
+            <table class="scaling-table">
+                <thead><tr>
+                    <th>Joueurs</th><th>HP</th><th>ATK</th><th>DEF</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
+        }
+
+        function buildElemGrid(boss) {
+            if (!boss.stats) return '<p class="no-stats">Stats non disponibles</p>';
+            const { resistances, weaknesses } = boss.stats;
+            return Object.keys(ELEM_CFG).map(elem => {
+                const res = resistances[elem] || 1000;
+                const wk  = weaknesses[elem] || 0;
+                // Combined: weakness > 0 = vuln, < 0 = resist; res > 1000 = extra resist
+                const net = wk - (res - 1000);
+                let cls = 'elem-neutral';
+                let label = '—';
+                if (wk === -4000 && res >= 2000) { cls = 'elem-immune'; label = 'Immunisé'; }
+                else if (net >= 1500) { cls = 'elem-weak'; label = `+${Math.round(net/10)}%`; }
+                else if (net > 0)     { cls = 'elem-weak'; label = `+${Math.round(net/10)}%`; }
+                else if (net <= -1500) { cls = 'elem-resist'; label = `${Math.round(net/10)}%`; }
+                else if (net < 0)    { cls = 'elem-resist'; label = `${Math.round(net/10)}%`; }
+                const cfg = ELEM_CFG[elem];
+                return `<div class="elem-cell ${cls}">
+                    <span class="elem-icon">${cfg.icon}</span>
+                    <span class="elem-name">${cfg.name}</span>
+                    <span class="elem-val">${label}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function buildWorldLevels(boss) {
+            if (!boss.diff_scaling) return '<p class="no-stats">Données de mise à l\'échelle non disponibles</p>';
+            const grades = Object.keys(boss.diff_scaling).map(Number).filter(g => g >= 2).sort();
+            if (!grades.length) return '<p class="no-stats">Aucun niveau monde disponible</p>';
+            const btns = grades.map(g => {
+                const label = WORLD_GRADES[g] || ('Grade '+g);
+                const active = _selectedWorldGrade === g ? ' active' : '';
+                return `<button class="world-level-btn${active}" data-grade="${g}">${label}</button>`;
+            }).join('');
+            return `<div class="world-level-btns">${btns}</div>`;
+        }
+
+        function buildDungeons(boss) {
+            if (boss.type === 'field') return buildWorldLevels(boss);
+            if (!boss.dungeons || !boss.dungeons.length)
+                return '<p class="no-stats">Aucun donjon associé</p>';
+
+            // Difficulty filter buttons
+            const diffs = [...new Set(boss.dungeons.map(d => d.difficulty))].sort();
+            const diffBtns = diffs.map(diff => {
+                const name = boss.dungeons.find(d => d.difficulty === diff)?.stage || DIFF_NAMES[diff] || ('Diff.'+diff);
+                const active = _selectedDiff === diff ? ' active' : '';
+                return `<button class="dungeon-diff-btn${active}" data-diff="${diff}">${name}</button>`;
+            }).join('');
+
+            const rows = boss.dungeons.map(d => {
+                const bp = d.recommend_bp ? `BP recommandé : ${d.recommend_bp.toLocaleString('fr-FR')}` : '';
+                const mins = Math.floor(d.time_limit / 60);
+                const secs = d.time_limit % 60;
+                const timeStr = d.time_limit ? `${mins}:${secs.toString().padStart(2,'0')}` : '?';
+                const sel = _selectedDiff === d.difficulty ? ' selected' : '';
+                return `<div class="dungeon-row${sel}" data-diff="${d.difficulty}">
+                    <span class="dungeon-diff diff-${d.difficulty}">${d.stage || DIFF_NAMES[d.difficulty] || 'Diff.'+d.difficulty}</span>
+                    <div class="dungeon-info">
+                        <div>${d.group_name}</div>
+                        ${bp ? `<div class="dungeon-bp">${bp}</div>` : ''}
+                    </div>
+                    <div class="dungeon-limits">
+                        <span class="dungeon-time">⏱ ${timeStr}</span>
+                        <span class="dungeon-players">👥 max ${d.max_players}</span>
+                    </div>
+                </div>`;
+            }).join('');
+
+            return `<div class="dungeon-diff-btns">${diffBtns}</div>
+                <div class="dungeon-list">${rows}</div>`;
+        }
+
+        function buildBaseStats(boss) {
+            if (!boss.stats) return '<p class="no-stats">Stats non disponibles (boss placeholder)</p>';
+            const s = boss.stats;
+            return `<div class="boss-base-stats">
+                <div class="bstat"><div class="bstat-label">HP (1J)</div><div class="bstat-val hp-val">${s.hp.toLocaleString('fr-FR')}</div></div>
+                <div class="bstat"><div class="bstat-label">ATK (1J)</div><div class="bstat-val atk-val">${s.atk.toLocaleString('fr-FR')}</div></div>
+                <div class="bstat"><div class="bstat-label">DEF</div><div class="bstat-val def-val">${s.def.toLocaleString('fr-FR')}</div></div>
+                <div class="bstat"><div class="bstat-label">Rés. Crit.</div><div class="bstat-val">${(s.crit_res/10).toFixed(0)}%</div></div>
+                <div class="bstat"><div class="bstat-label">Burst Gauge</div><div class="bstat-val">${s.burst_gauge}</div></div>
+            </div>`;
+        }
+
+        // ── Refresh difficulty-sensitive sections ──────────────────
+        function refreshModal(boss) {
+            const scalingEl = document.getElementById('bsec-scaling');
+            const dungeonsEl = document.getElementById('bsec-dungeons');
+            if (scalingEl) scalingEl.innerHTML = buildScalingTable(boss);
+            const sectionTitle = boss.type === 'field' ? 'Niveaux du monde' : 'Donjons associés';
+            if (dungeonsEl) dungeonsEl.innerHTML = `<div class="bsec-title">${sectionTitle}</div>` + buildDungeons(boss);
+        }
+
+        // ── Open modal ─────────────────────────────────────────────
+        function openBoss(id) {
+            _selectedDiff = null;
+            _selectedWorldGrade = null;
+            const boss = _bosses.find(b => b.id === id);
+            if (!boss) return;
+            const iconEl = boss.icon
+                ? `<img src="${boss.icon}" alt="${boss.name}" class="boss-modal-icon">`
+                : `<div class="boss-modal-icon-ph">👹</div>`;
+            const bodyEl = document.getElementById('boss-modal-body');
+            bodyEl.dataset.bossId = id;
+            bodyEl.innerHTML = `
+                <div class="boss-modal-header">
+                    <div class="boss-modal-portrait">${boss.icon ? `<img src="${boss.icon}" alt="">` : ''}</div>
+                    ${iconEl}
+                    <div class="boss-modal-meta">
+                        <div class="boss-modal-name">${boss.name}</div>
+                        <div class="boss-modal-tags">
+                            <span class="boss-modal-tag badge-${boss.type}">${boss.type_label}</span>
+                            ${boss.tribe ? `<span class="boss-modal-tag monster-tag tribe">${boss.tribe}</span>` : ''}
+                            ${boss.keys ? `<span class="boss-modal-tag boss-keys">🗝️×${boss.keys}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="boss-modal-body" id="boss-modal-sections">
+                    <div id="bsec-base">
+                        <div class="bsec-title">Statistiques de base (solo)</div>
+                        ${buildBaseStats(boss)}
+                    </div>
+                    <div id="bsec-scaling">
+                        ${buildScalingTable(boss)}
+                    </div>
+                    <div id="bsec-elem">
+                        <div class="bsec-title">Résistances & faiblesses élémentaires</div>
+                        <div class="elem-grid">${buildElemGrid(boss)}</div>
+                    </div>
+                    <div id="bsec-dungeons">
+                        <div class="bsec-title">${boss.type === 'field' ? 'Niveaux du monde' : 'Donjons associés'}</div>
+                        ${buildDungeons(boss)}
+                    </div>
+                </div>`;
+            document.getElementById('boss-modal').classList.add('active');
+            // Auto-select first world level for field bosses, or first dungeon difficulty otherwise
+            if (boss.type === 'field' && boss.diff_scaling) {
+                const grades = Object.keys(boss.diff_scaling).map(Number).filter(g => g >= 2).sort();
+                if (grades.length) { _selectedWorldGrade = grades[0]; refreshModal(boss); }
+            } else if (boss.dungeons && boss.dungeons.length) {
+                _selectedDiff = boss.dungeons[0].difficulty;
+                refreshModal(boss);
+            }
+        }
+
+        // ── Events ─────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGrid();
+
+            document.getElementById('boss-grid').addEventListener('click', e => {
+                const card = e.target.closest('.boss-card');
+                if (card) openBoss(card.dataset.id);
+            });
+
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    _filter = btn.dataset.type;
+                    renderGrid();
+                });
+            });
+
+            document.getElementById('boss-search').addEventListener('input', e => {
+                _search = e.target.value.toLowerCase().trim();
+                renderGrid();
+            });
+
+            document.getElementById('boss-modal').addEventListener('click', e => {
+                if (e.target === e.currentTarget || e.target.classList.contains('close-btn')) {
+                    e.currentTarget.classList.remove('active');
+                    return;
+                }
+                const body = document.getElementById('boss-modal-body');
+                const bossId = body && body.dataset.bossId;
+                const boss = _bosses.find(b => b.id === bossId);
+                if (!boss) return;
+
+                // World level button (field bosses)
+                const wlBtn = e.target.closest('.world-level-btn');
+                if (wlBtn) {
+                    const grade = parseInt(wlBtn.dataset.grade);
+                    _selectedWorldGrade = (_selectedWorldGrade === grade) ? null : grade;
+                    refreshModal(boss);
+                    return;
+                }
+
+                // Difficulty button or dungeon row click
+                const diffBtn = e.target.closest('.dungeon-diff-btn');
+                const dunRow  = e.target.closest('.dungeon-row');
+                const trigger = diffBtn || dunRow;
+                if (trigger) {
+                    const diff = parseInt(trigger.dataset.diff);
+                    _selectedDiff = (_selectedDiff === diff) ? null : diff;
+                    refreshModal(boss);
+                }
+            });
+
+            // URL param: bosses.html?id=50401301
+            const params = new URLSearchParams(location.search);
+            if (params.get('id')) openBoss(params.get('id'));
+        });
+    })();
+    </script>
+</body>
+</html>
