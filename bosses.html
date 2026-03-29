@@ -154,6 +154,24 @@
         /* No stats placeholder */
         .no-stats { color:var(--text-muted); font-size:.9rem; font-style:italic; text-align:center; padding:.75rem; }
 
+        /* Drops section */
+        .drops-section { display:flex; flex-direction:column; gap:.6rem; }
+        .drops-empty { color:var(--text-muted); font-size:.88rem; font-style:italic; }
+        .drop-group { display:flex; flex-wrap:wrap; gap:.5rem; }
+        .drop-item { display:flex; align-items:center; gap:.5rem; padding:.45rem .7rem; border-radius:9px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.07); min-width:0; }
+        .drop-item.cat-material { border-color:rgba(230,194,122,0.25); }
+        .drop-item.cat-equip    { border-color:rgba(100,180,255,0.2); }
+        .drop-item.cat-pet      { border-color:rgba(100,220,120,0.3); }
+        .drop-item.cat-food     { border-color:rgba(255,170,80,0.25); }
+        .drop-icon { width:32px; height:32px; object-fit:contain; border-radius:5px; flex-shrink:0; }
+        .drop-icon-ph { width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+        .drop-info { display:flex; flex-direction:column; min-width:0; }
+        .drop-name { font-size:.78rem; color:var(--text-light); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+        .drop-meta { font-size:.7rem; color:var(--text-muted); white-space:nowrap; }
+        .drop-rate-material { color:var(--primary-color); font-weight:600; }
+        .drop-rate-equip     { color:#64b4ff; }
+        .drop-rate-pet       { color:#88dd88; }
+
         /* Responsive */
         @media(max-width:600px) {
             .boss-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); padding:1rem; }
@@ -457,13 +475,66 @@
             </div>`;
         }
 
+        // ── Build drops section ────────────────────────────────────
+        function buildDrops(boss) {
+            if (!boss.drops) return '<p class="drops-empty">Aucun loot répertorié</p>';
+
+            // Get grade for current selection
+            let grade = null;
+            if (boss.type === 'field' && _selectedWorldGrade !== null) {
+                grade = String(_selectedWorldGrade);
+            } else if (boss.type !== 'field') {
+                const dun = getSelectedDungeon(boss);
+                if (dun) grade = String(dun.real_grade);
+            }
+
+            const allDrops  = boss.drops.all  || [];
+            const gradeDrops = (grade && boss.drops.by_grade) ? (boss.drops.by_grade[grade] || []) : [];
+            const items = [...gradeDrops, ...allDrops];
+
+            if (!items.length) return '<p class="drops-empty">Aucun drop pour ce niveau</p>';
+
+            // Group by category
+            const bycat = {};
+            for (const it of items) {
+                (bycat[it.cat] = bycat[it.cat] || []).push(it);
+            }
+            const catOrder = ['material', 'equip', 'pet', 'food'];
+            const catIcons = { material:'💎', equip:'⚔️', pet:'🐾', food:'🍖', mastery:'📦' };
+
+            return catOrder.filter(c => bycat[c]).map(c => {
+                const cards = bycat[c].map(it => {
+                    const iconEl = it.icon
+                        ? `<img src="${it.icon}" alt="" class="drop-icon" loading="lazy">`
+                        : `<div class="drop-icon-ph">${catIcons[it.cat] || '📦'}</div>`;
+                    const ratePct = (it.rate / 100).toFixed(it.rate >= 1000 ? 0 : it.rate >= 100 ? 1 : 2);
+                    const rateStr = it.rate >= 10000 ? '' : `${ratePct}%`;
+                    let meta = '';
+                    if (it.min === it.max) meta = `×${it.min}`;
+                    else meta = `×${it.min}–${it.max}`;
+                    if (rateStr) meta = rateStr + (meta !== '×1' ? ' ' + meta : '');
+                    const rateClass = `drop-rate-${it.cat === 'equip' ? 'equip' : it.cat === 'pet' ? 'pet' : 'material'}`;
+                    return `<div class="drop-item cat-${it.cat}">
+                        ${iconEl}
+                        <div class="drop-info">
+                            <span class="drop-name" title="${it.name}">${it.name}</span>
+                            <span class="drop-meta ${rateClass}">${meta}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+                return `<div class="drop-group">${cards}</div>`;
+            }).join('');
+        }
+
         // ── Refresh difficulty-sensitive sections ──────────────────
         function refreshModal(boss) {
-            const scalingEl = document.getElementById('bsec-scaling');
+            const scalingEl  = document.getElementById('bsec-scaling');
             const dungeonsEl = document.getElementById('bsec-dungeons');
-            if (scalingEl) scalingEl.innerHTML = buildScalingTable(boss);
+            const dropsEl    = document.getElementById('bsec-drops-content');
+            if (scalingEl)  scalingEl.innerHTML = buildScalingTable(boss);
             const sectionTitle = boss.type === 'field' ? 'Niveaux du monde' : 'Donjons associés';
             if (dungeonsEl) dungeonsEl.innerHTML = `<div class="bsec-title">${sectionTitle}</div>` + buildDungeons(boss);
+            if (dropsEl)    dropsEl.innerHTML = buildDrops(boss);
         }
 
         // ── Open modal ─────────────────────────────────────────────
@@ -491,6 +562,14 @@
                     </div>
                 </div>
                 <div class="boss-modal-body" id="boss-modal-sections">
+                    <div id="bsec-dungeons">
+                        <div class="bsec-title">${boss.type === 'field' ? 'Niveaux du monde' : 'Donjons associés'}</div>
+                        ${buildDungeons(boss)}
+                    </div>
+                    <div id="bsec-drops">
+                        <div class="bsec-title">Loot</div>
+                        <div class="drops-section" id="bsec-drops-content">${buildDrops(boss)}</div>
+                    </div>
                     <div id="bsec-base">
                         <div class="bsec-title">Statistiques de base (solo)</div>
                         ${buildBaseStats(boss)}
@@ -501,10 +580,6 @@
                     <div id="bsec-elem">
                         <div class="bsec-title">Résistances & faiblesses élémentaires</div>
                         <div class="elem-grid">${buildElemGrid(boss)}</div>
-                    </div>
-                    <div id="bsec-dungeons">
-                        <div class="bsec-title">${boss.type === 'field' ? 'Niveaux du monde' : 'Donjons associés'}</div>
-                        ${buildDungeons(boss)}
                     </div>
                 </div>`;
             document.getElementById('boss-modal').classList.add('active');
