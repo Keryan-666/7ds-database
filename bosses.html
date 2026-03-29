@@ -229,7 +229,7 @@
             Wind:     { icon: '🌀', name: 'Vent',     color: '#88ff88' },
             Fire:     { icon: '🔥', name: 'Feu',      color: '#ff8844' },
             Ice:      { icon: '❄️', name: 'Glace',    color: '#88ccff' },
-            Earth:    { icon: '🪨', name: 'Terre',    color: '#cc9966' },
+            Earth:    { icon: '⛰️', name: 'Terre',    color: '#cc9966' },
             Dark:     { icon: '🌑', name: 'Ténèbres', color: '#bb88ff' },
             Holy:     { icon: '✨', name: 'Sacré',    color: '#ffe8a0' },
         };
@@ -389,8 +389,13 @@
 
         function buildWorldLevels(boss) {
             if (!boss.diff_scaling) return '<p class="no-stats">Données de mise à l\'échelle non disponibles</p>';
-            const grades = Object.keys(boss.diff_scaling).map(Number).filter(g => g >= 2).sort();
-            if (!grades.length) return '<p class="no-stats">Aucun niveau monde disponible</p>';
+            // Only show grades where at least one of HP/ATK/DEF actually scales
+            const grades = Object.keys(boss.diff_scaling).map(Number).filter(g => {
+                if (g < 2) return false;
+                const sc = boss.diff_scaling[g];
+                return sc && (sc.hp_rate || sc.atk_rate || sc.def_rate);
+            }).sort();
+            if (!grades.length) return '<p class="no-stats">Les stats ne varient pas selon le niveau du monde pour ce boss</p>';
             const btns = grades.map(g => {
                 const label = WORLD_GRADES[g] || ('Grade '+g);
                 const active = _selectedWorldGrade === g ? ' active' : '';
