@@ -154,6 +154,10 @@
         /* No stats placeholder */
         .no-stats { color:var(--text-muted); font-size:.9rem; font-style:italic; text-align:center; padding:.75rem; }
 
+        /* Lexique help link */
+        .lex-link { font-size:.62rem; padding:.1rem .3rem; border-radius:4px; background:rgba(100,180,255,0.12); color:#88ccff; border:1px solid rgba(100,180,255,0.25); text-decoration:none; vertical-align:middle; margin-left:.3rem; opacity:.75; transition:opacity .15s; }
+        .lex-link:hover { opacity:1; }
+
         /* Drops section */
         .drops-section { display:flex; flex-direction:column; gap:.6rem; }
         .drops-empty { color:var(--text-muted); font-size:.88rem; font-style:italic; }
@@ -357,8 +361,8 @@
             const combatExtra = showExtra
                 ? `<div class="scaling-combat-row">
                     ${showDef  ? `<span class="sc-label">DEF</span><span class="sc-val def-val">${defVal}</span>` : ''}
-                    ${showAcc  ? `<span class="sc-label" style="${showDef?'margin-left:1.2rem':''}">Précision</span><span class="sc-val acc-val">${accPct}</span>
-                    <span class="sc-label" style="margin-left:1.2rem">Blocage</span><span class="sc-val block-val">${blockPct}</span>` : ''}
+                    ${showAcc  ? `<span class="sc-label" style="${showDef?'margin-left:1.2rem':''}">Précision <a href="lexique.html#accuracy" target="_blank" class="lex-link">?</a></span><span class="sc-val acc-val">${accPct}</span>
+                    <span class="sc-label" style="margin-left:1.2rem">Blocage <a href="lexique.html#block" target="_blank" class="lex-link">?</a></span><span class="sc-val block-val">${blockPct}</span>` : ''}
                    </div>`
                 : '';
 
@@ -374,13 +378,13 @@
                 </tr>`;
             }).join('');
             return `<div class="scaling-header">
-                <div class="bsec-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0">Adaptation multijoueur</div>
+                <div class="bsec-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0">Adaptation multijoueur <a href="lexique.html#party" target="_blank" class="lex-link">?</a></div>
                 ${diffInfo}
             </div>
             ${combatExtra}
             <table class="scaling-table">
                 <thead><tr>
-                    <th>Joueurs</th><th>HP</th><th>ATK</th><th title="Toutes les résistances élémentaires">Rés. él.</th>
+                    <th>Joueurs</th><th>HP</th><th>ATK</th><th title="Toutes les résistances élémentaires">Rés. él. <a href="lexique.html#elements" target="_blank" class="lex-link" style="font-size:.55rem">?</a></th>
                 </tr></thead>
                 <tbody>${rows}</tbody>
             </table>`;
@@ -470,8 +474,8 @@
                 <div class="bstat"><div class="bstat-label">HP (1J)</div><div class="bstat-val hp-val">${s.hp.toLocaleString('fr-FR')}</div></div>
                 <div class="bstat"><div class="bstat-label">ATK (1J)</div><div class="bstat-val atk-val">${s.atk.toLocaleString('fr-FR')}</div></div>
                 <div class="bstat"><div class="bstat-label">DEF</div><div class="bstat-val def-val">${s.def.toLocaleString('fr-FR')}</div></div>
-                <div class="bstat"><div class="bstat-label">Rés. Crit.</div><div class="bstat-val">${(s.crit_res/10).toFixed(0)}%</div></div>
-                <div class="bstat"><div class="bstat-label">Burst Gauge</div><div class="bstat-val">${s.burst_gauge}</div></div>
+                <div class="bstat"><div class="bstat-label">Rés. Crit. <a href="lexique.html#crit-res" target="_blank" class="lex-link">?</a></div><div class="bstat-val">${(s.crit_res/10).toFixed(0)}%</div></div>
+                <div class="bstat"><div class="bstat-label">Burst Gauge <a href="lexique.html#burst" target="_blank" class="lex-link">?</a></div><div class="bstat-val">${s.burst_gauge}</div></div>
             </div>`;
         }
 

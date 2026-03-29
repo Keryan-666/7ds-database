@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7DS Database - Lexique</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/site.js"></script>
+    <style>
+        /* ── Page hero ─────────────────────────────────────────── */
+        .page-hero { padding:2rem 2rem 1.5rem; text-align:center; position:relative; overflow:hidden; }
+        .page-hero::before { content:''; position:absolute; top:0;left:0;right:0;bottom:0;
+            background:radial-gradient(circle at 50% 10%, rgba(100,180,255,0.12), transparent 70%); z-index:-1; }
+        .page-hero h2 { font-family:var(--header-font); font-size:2.4rem; border:none; padding:0;
+            margin-bottom:.25rem; font-weight:800;
+            background:linear-gradient(180deg,#ffffff 0%,#88ccff 100%);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text; display:inline-block; }
+        .page-hero p { color:var(--text-muted); font-size:1.05rem; letter-spacing:1px; }
+
+        /* ── Layout ─────────────────────────────────────────────── */
+        .lex-layout { display:flex; gap:2rem; padding:1.5rem 2rem 4rem; max-width:1100px; margin:0 auto; align-items:flex-start; }
+        .lex-sidebar { width:200px; flex-shrink:0; position:sticky; top:72px; }
+        .lex-toc { background:rgba(20,24,34,0.9); border:1px solid var(--border-color); border-radius:12px; padding:1rem; }
+        .lex-toc-title { font-size:.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:.75rem; }
+        .lex-toc a { display:block; padding:.3rem .5rem; border-radius:6px; font-size:.82rem; color:var(--text-muted); text-decoration:none; transition:all .15s; }
+        .lex-toc a:hover { color:var(--text-light); background:rgba(255,255,255,0.05); }
+        .lex-toc a.active { color:var(--primary-color); background:rgba(230,194,122,0.08); }
+
+        .lex-content { flex:1; min-width:0; display:flex; flex-direction:column; gap:2rem; }
+
+        /* ── Entry cards ─────────────────────────────────────────── */
+        .lex-entry { background:rgba(20,24,34,0.95); border:1px solid var(--border-color);
+            border-radius:14px; padding:1.5rem 1.75rem; scroll-margin-top:80px; }
+        .lex-entry:target { border-color:rgba(230,194,122,0.5);
+            box-shadow:0 0 0 1px rgba(230,194,122,0.15); }
+
+        .lex-entry-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; }
+        .lex-icon { font-size:1.6rem; flex-shrink:0; }
+        .lex-entry-name { font-family:var(--header-font); font-size:1.3rem; font-weight:700; color:var(--text-light); }
+        .lex-entry-key { font-size:.72rem; padding:.15rem .5rem; border-radius:6px; background:rgba(100,180,255,0.12);
+            color:#88ccff; border:1px solid rgba(100,180,255,0.25); font-family:monospace; }
+
+        .lex-desc { color:var(--text-muted); font-size:.92rem; line-height:1.7; margin-bottom:1rem; }
+        .lex-desc strong { color:var(--text-light); }
+        .lex-desc em { color:var(--primary-color); font-style:normal; font-weight:600; }
+
+        /* ── Scale badge ─────────────────────────────────────────── */
+        .lex-scale { display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .75rem;
+            border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09);
+            font-size:.8rem; color:var(--text-muted); margin-bottom:.85rem; }
+        .lex-scale strong { color:var(--text-light); }
+
+        /* ── Example block ───────────────────────────────────────── */
+        .lex-example { background:rgba(0,0,0,0.35); border-radius:10px; border:1px solid rgba(255,255,255,0.06);
+            padding:1rem 1.25rem; margin-top:.5rem; }
+        .lex-example-title { font-size:.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+            color:var(--text-muted); margin-bottom:.65rem; }
+        .lex-example-row { display:flex; justify-content:space-between; align-items:center;
+            padding:.3rem 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:.88rem; }
+        .lex-example-row:last-child { border-bottom:none; padding-bottom:0; }
+        .lex-example-label { color:var(--text-muted); }
+        .lex-example-val { font-weight:600; }
+        .val-hp   { color:#ff7070; }
+        .val-atk  { color:#ffaa44; }
+        .val-def  { color:#64b4ff; }
+        .val-gold { color:var(--primary-color); }
+        .val-green { color:#88ddaa; }
+        .val-red  { color:#ff7070; }
+        .val-purple { color:#cc88ff; }
+
+        /* ── Info blocks ─────────────────────────────────────────── */
+        .lex-info-box { border-radius:10px; padding:.85rem 1.1rem; margin:.75rem 0; font-size:.88rem; line-height:1.6; }
+        .lex-info-box.tip   { background:rgba(100,220,120,0.07); border:1px solid rgba(100,220,120,0.25); color:#aaddbb; }
+        .lex-info-box.warn  { background:rgba(255,170,50,0.07);  border:1px solid rgba(255,170,50,0.25);  color:#ffcc88; }
+        .lex-info-box.note  { background:rgba(100,180,255,0.07); border:1px solid rgba(100,180,255,0.25); color:#99ccee; }
+
+        /* ── Element grid ────────────────────────────────────────── */
+        .elem-demo { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.65rem; }
+        .elem-chip { display:flex; align-items:center; gap:.35rem; padding:.3rem .65rem; border-radius:8px; font-size:.82rem; }
+        .elem-chip.weak    { background:rgba(255,140,0,0.12);  border:1px solid rgba(255,140,0,0.35);  color:#ffbb66; }
+        .elem-chip.resist  { background:rgba(100,180,255,0.1); border:1px solid rgba(100,180,255,0.35); color:#88ccff; }
+        .elem-chip.neutral { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:var(--text-muted); }
+        .elem-chip.immune  { background:rgba(100,100,255,0.12); border:1px solid rgba(100,100,255,0.4);  color:#aaaaff; }
+
+        /* ── Block mechanic diagram ──────────────────────────────── */
+        .block-flow { display:flex; flex-direction:column; gap:.4rem; margin:.75rem 0; }
+        .block-step { display:flex; align-items:center; gap:.75rem; padding:.55rem .9rem; border-radius:9px;
+            background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); font-size:.87rem; }
+        .block-step-num { width:22px; height:22px; border-radius:50%; background:rgba(100,180,255,0.2);
+            color:#88ccff; font-size:.75rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .block-step-text { color:var(--text-muted); flex:1; }
+        .block-step-text strong { color:var(--text-light); }
+        .block-step-result { font-size:.8rem; font-weight:700; }
+
+        /* ── Section separator ──────────────────────────────────── */
+        .lex-section-sep { font-size:.68rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+            color:var(--text-muted); padding:.25rem 0 .75rem; opacity:.6; }
+
+        @media(max-width:720px) {
+            .lex-layout { flex-direction:column; padding:1rem; }
+            .lex-sidebar { width:100%; position:static; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>7DS Database</h1>
+            <p>Base de donnees complete du jeu Seven Deadly Sins</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html"                    data-i18n="ui.nav.home">Accueil</a></li>
+            <li><a href="index.html?section=characters" data-i18n="ui.nav.characters">Personnages</a></li>
+            <li><a href="index.html?section=monsters"   data-i18n="ui.nav.monsters">Monstres</a></li>
+            <li><a href="index.html?section=pvp"        data-i18n="ui.nav.pvp">PvP</a></li>
+            <li><a href="index.html?section=loot"       data-i18n="ui.nav.loot">Loot</a></li>
+            <li><a href="passifs.html"                  data-i18n="ui.nav.passives">Passifs</a></li>
+            <li><a href="capture.html"                  data-i18n="ui.nav.capture">Capture</a></li>
+            <li><a href="cuisine.html"                  data-i18n="ui.nav.cooking">Cuisine</a></li>
+            <li><a href="map.html"                      data-i18n="ui.nav.map">Carte</a></li>
+            <li><a href="bosses.html">Bosses</a></li>
+            <li><a href="lexique.html" class="active">Lexique</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="page-hero">
+            <h2>Lexique</h2>
+            <p>Explication détaillée de toutes les statistiques du jeu</p>
+        </div>
+
+        <div class="lex-layout">
+            <!-- Sidebar TOC -->
+            <aside class="lex-sidebar">
+                <div class="lex-toc">
+                    <div class="lex-toc-title">Sommaire</div>
+                    <div class="lex-section-sep">Stats de base</div>
+                    <a href="#hp">HP — Points de vie</a>
+                    <a href="#atk">ATK — Attaque</a>
+                    <a href="#def">DEF — Défense</a>
+                    <a href="#crit-res">Rés. Critique</a>
+                    <a href="#burst">Burst Gauge</a>
+                    <div class="lex-section-sep" style="padding-top:.75rem">Éléments</div>
+                    <a href="#elements">Résistances & Faiblesses</a>
+                    <div class="lex-section-sep" style="padding-top:.75rem">Combat avancé</div>
+                    <a href="#scaling">Niveaux & Difficulté</a>
+                    <a href="#party">Adaptation multijoueur</a>
+                    <a href="#accuracy">Précision</a>
+                    <a href="#block">Blocage / Persévérance</a>
+                </div>
+            </aside>
+
+            <!-- Main content -->
+            <div class="lex-content">
+
+                <!-- HP -->
+                <div class="lex-entry" id="hp">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">❤️</span>
+                        <div>
+                            <div class="lex-entry-name">HP — Points de vie</div>
+                            <span class="lex-entry-key">B_MaxHp</span>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        Les HP représentent la <strong>quantité totale de dégâts que le boss peut encaisser</strong> avant de mourir.
+                        La valeur affichée est toujours la valeur <em>solo (1 joueur)</em> au niveau de monde / difficulté sélectionné.
+                        En groupe, les HP augmentent considérablement — voir <a href="#party" style="color:var(--primary-color)">Adaptation multijoueur</a>.
+                    </p>
+                    <div class="lex-example">
+                        <div class="lex-example-title">Exemple — Banakro (Boss de monde Ch.1, 10 clés)</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Solo — Monde 1</span>
+                            <span class="lex-example-val val-hp">43 198</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Solo — Monde 2</span>
+                            <span class="lex-example-val val-hp">180 706 <span style="color:var(--text-muted);font-size:.78rem;font-weight:400">(×4,18)</span></span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Solo — Monde 3</span>
+                            <span class="lex-example-val val-hp">374 928 <span style="color:var(--text-muted);font-size:.78rem;font-weight:400">(×8,68)</span></span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Solo — Monde 4</span>
+                            <span class="lex-example-val val-hp">634 406 <span style="color:var(--text-muted);font-size:.78rem;font-weight:400">(×14,68)</span></span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">2 Joueurs — Monde 1</span>
+                            <span class="lex-example-val val-hp">107 995 <span style="color:var(--text-muted);font-size:.78rem;font-weight:400">(×2,5 — +150%)</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATK -->
+                <div class="lex-entry" id="atk">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">⚔️</span>
+                        <div>
+                            <div class="lex-entry-name">ATK — Attaque</div>
+                            <span class="lex-entry-key">B_Atk</span>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        Valeur d'attaque de base du boss. Les dégâts infligés au joueur dépendent de cette valeur
+                        comparée à ta <strong>DEF</strong>. L'ATK scale fortement avec le niveau du monde et le nombre de joueurs.
+                    </p>
+                    <div class="lex-example">
+                        <div class="lex-example-title">Exemple — Banakro</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">ATK — Monde 1</span>
+                            <span class="lex-example-val val-atk">933</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">ATK — Monde 2</span>
+                            <span class="lex-example-val val-atk">2 938 <span style="color:var(--text-muted);font-size:.78rem;font-weight:400">(×3,15)</span></span>
+                        </div>
+                    </div>
+                    <div class="lex-info-box note" style="margin-top:.75rem">
+                        Comme pour les HP, l'ATK augmente aussi avec le nombre de joueurs en groupe (+30% à 2J, +50% à 3J, +60% à 4J).
+                    </div>
+                </div>
+
+                <!-- DEF -->
+                <div class="lex-entry" id="def">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">🛡️</span>
+                        <div>
+                            <div class="lex-entry-name">DEF — Défense</div>
+                            <span class="lex-entry-key">B_Def</span>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        Valeur de défense du boss. Elle réduit les dégâts que <strong>tu infliges</strong> au boss.
+                        Plus la DEF est élevée, moins tes attaques font de dégâts.
+                        La DEF <em>scale uniquement avec le niveau du monde</em>, pas avec le nombre de joueurs.
+                    </p>
+                    <div class="lex-example">
+                        <div class="lex-example-title">Exemple — Banakro</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">DEF — Monde 1</span>
+                            <span class="lex-example-val val-def">493</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">DEF — Monde 2</span>
+                            <span class="lex-example-val val-def">1 384 <span style="color:var(--text-muted);font-size:.78rem;font-weight:400">(×2,81)</span></span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">DEF — Monde 2 à 4 joueurs</span>
+                            <span class="lex-example-val val-def">1 384 <span style="color:var(--text-muted);font-size:.78rem;font-weight:400">(identique, ne change pas en groupe)</span></span>
+                        </div>
+                    </div>
+                    <div class="lex-info-box warn" style="margin-top:.75rem">
+                        Contrairement aux HP et à l'ATK, la DEF du boss <strong>ne change pas</strong> selon le nombre de joueurs. Rajouter des coéquipiers ne rend pas le boss plus solide à percer.
+                    </div>
+                </div>
+
+                <!-- Résistance Critique -->
+                <div class="lex-entry" id="crit-res">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">💥</span>
+                        <div>
+                            <div class="lex-entry-name">Résistance Critique</div>
+                            <span class="lex-entry-key">C_Critical_ResRate</span>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        Probabilité que le boss résiste à un <strong>coup critique</strong>.
+                        Plus la valeur est haute, moins tes coups critiques ont d'effet.
+                    </p>
+                    <div class="lex-scale">
+                        Échelle : <strong>1 000 = 100 %</strong> · Valeur en jeu ÷ 10 = pourcentage affiché
+                    </div>
+                    <div class="lex-example">
+                        <div class="lex-example-title">Valeurs courantes</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">1 000</span>
+                            <span class="lex-example-val val-gold">100% — Immunisé aux coups critiques</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">500</span>
+                            <span class="lex-example-val val-gold">50% — Résiste 1 crit sur 2</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">0</span>
+                            <span class="lex-example-val val-gold">0% — Aucune résistance critique</span>
+                        </div>
+                    </div>
+                    <div class="lex-info-box note" style="margin-top:.75rem">
+                        La plupart des boss de monde ont 1 000 (immunisés). Les boss de donjon et certains boss d'élite peuvent avoir des valeurs plus basses.
+                    </div>
+                </div>
+
+                <!-- Burst Gauge -->
+                <div class="lex-entry" id="burst">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">⚡</span>
+                        <div>
+                            <div class="lex-entry-name">Burst Gauge</div>
+                            <span class="lex-entry-key">M_Burst_Gauge</span>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        Capacité de la jauge de burst du boss. Cette jauge se remplit quand le boss
+                        reçoit certains types d'attaques. Une fois pleine, le boss entre en <strong>mode Burst</strong>
+                        (bref état de surtension avec des attaques plus puissantes).
+                        <br><br>
+                        Un boss avec <em>0</em> n'a pas de mode burst.
+                    </p>
+                    <div class="lex-example">
+                        <div class="lex-example-title">Exemple — Banakro</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Burst Gauge</span>
+                            <span class="lex-example-val val-purple">1 500</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Éléments -->
+                <div class="lex-entry" id="elements">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">🌀</span>
+                        <div>
+                            <div class="lex-entry-name">Résistances &amp; Faiblesses élémentaires</div>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        Chaque boss a un profil élémentaire qui modifie les dégâts reçus selon l'élément de l'attaque.
+                        Les pourcentages affichés représentent le <strong>modificateur net de dégâts</strong> :
+                    </p>
+
+                    <div class="elem-demo">
+                        <div class="elem-chip weak">🔥 +200% — Faiblesse forte : prend ×3 les dégâts de Feu</div>
+                        <div class="elem-chip weak">⛰️ +50% — Faiblesse légère : prend ×1,5 les dégâts de Terre</div>
+                        <div class="elem-chip neutral">⚔️ Neutre — Aucun modificateur</div>
+                        <div class="elem-chip resist">❄️ −20% — Résistance légère : prend ×0,8 les dégâts de Glace</div>
+                        <div class="elem-chip resist">🌑 −300% — Résistance forte : prend très peu de dégâts de Ténèbres</div>
+                        <div class="elem-chip immune">✨ Immunisé — Aucun dégât de cet élément</div>
+                    </div>
+
+                    <div class="lex-example" style="margin-top:.75rem">
+                        <div class="lex-example-title">Exemple réel — Démon rouge</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">⛰️ Terre</span>
+                            <span class="lex-example-val" style="color:#ffaa44">+200% — Utiliser des attaques Terre pour max dégâts</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">✨ Sacré</span>
+                            <span class="lex-example-val" style="color:#ffaa44">+200% — Aussi très efficace</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">🔥 Feu</span>
+                            <span class="lex-example-val val-def">−300% — À éviter absolument</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">⚡ Foudre / 🌀 Vent / etc.</span>
+                            <span class="lex-example-val" style="color:var(--text-muted)">Neutre — Dégâts normaux</span>
+                        </div>
+                    </div>
+
+                    <div class="lex-info-box tip" style="margin-top:.75rem">
+                        Utilise toujours l'élément sur lequel le boss est <strong>faible</strong> pour maximiser tes dégâts. Une faiblesse de +200% triple les dégâts de cet élément.
+                    </div>
+                </div>
+
+                <!-- Scaling / Niveaux du monde -->
+                <div class="lex-entry" id="scaling">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">🌍</span>
+                        <div>
+                            <div class="lex-entry-name">Niveaux du monde &amp; Difficulté de donjon</div>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        Les stats de base affichées correspondent toujours au <em>niveau le plus bas disponible</em>
+                        (Monde 1 pour les boss de monde, Facile pour les donjons).
+                        Sélectionner un niveau supérieur applique un <strong>multiplicateur</strong> sur HP, ATK et DEF.
+                    </p>
+                    <div class="lex-example">
+                        <div class="lex-example-title">Multiplicateurs — Banakro</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 1</span>
+                            <span class="lex-example-val">HP ×1 · ATK ×1 · DEF ×1 <span style="color:var(--text-muted);font-size:.78rem">(base)</span></span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 2</span>
+                            <span class="lex-example-val">HP ×4,18 · ATK ×3,15 · DEF ×2,81</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 3</span>
+                            <span class="lex-example-val">HP ×8,68 · ATK ×6,18 · DEF ×5,36</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 4</span>
+                            <span class="lex-example-val">HP ×14,68 · ATK ×10,24 · DEF ×8,77</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adaptation multijoueur -->
+                <div class="lex-entry" id="party">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">👥</span>
+                        <div>
+                            <div class="lex-entry-name">Adaptation multijoueur</div>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        Quand plusieurs joueurs combattent le même boss, ses stats <strong>HP</strong> et <strong>ATK</strong>
+                        augmentent automatiquement. La DEF ne change jamais avec le nombre de joueurs.
+                        Les <strong>Rés. él.</strong> (résistances élémentaires) augmentent aussi légèrement en groupe.
+                    </p>
+                    <div class="lex-scale">
+                        Échelle : <strong>10 000 = 100 %</strong> · Valeur en jeu ÷ 100 = pourcentage
+                    </div>
+                    <div class="lex-example">
+                        <div class="lex-example-title">Bonus du boss selon le nombre de joueurs (valeurs universelles)</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">1 joueur</span>
+                            <span class="lex-example-val">Aucun bonus — stats de base</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">2 joueurs</span>
+                            <span class="lex-example-val">
+                                <span class="val-hp">HP +150%</span> ·
+                                <span class="val-atk">ATK +30%</span> ·
+                                <span class="val-green">Rés. él. +15%</span>
+                            </span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">3 joueurs</span>
+                            <span class="lex-example-val">
+                                <span class="val-hp">HP +300%</span> ·
+                                <span class="val-atk">ATK +50%</span> ·
+                                <span class="val-green">Rés. él. +30%</span>
+                            </span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">4 joueurs</span>
+                            <span class="lex-example-val">
+                                <span class="val-hp">HP +450%</span> ·
+                                <span class="val-atk">ATK +60%</span> ·
+                                <span class="val-green">Rés. él. +45%</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="lex-example" style="margin-top:.65rem">
+                        <div class="lex-example-title">Application — Banakro à Monde 1</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">1J — HP</span>
+                            <span class="lex-example-val val-hp">43 198</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">2J — HP (+150%)</span>
+                            <span class="lex-example-val val-hp">107 995</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">3J — HP (+300%)</span>
+                            <span class="lex-example-val val-hp">172 792</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">4J — HP (+450%)</span>
+                            <span class="lex-example-val val-hp">237 589</span>
+                        </div>
+                    </div>
+                    <div class="lex-info-box warn" style="margin-top:.75rem">
+                        <strong>Résistances élémentaires en groupe :</strong> en plus des bonus HP/ATK, chaque résistance élémentaire du boss augmente de +15% par joueur supplémentaire. Tes éléments forts restent les meilleurs, mais l'avantage élémentaire est légèrement réduit.
+                    </div>
+                </div>
+
+                <!-- Précision -->
+                <div class="lex-entry" id="accuracy">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">🎯</span>
+                        <div>
+                            <div class="lex-entry-name">Précision</div>
+                            <span class="lex-entry-key">A_Accuracy</span>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        La Précision est un stat <strong>offensif du boss</strong> — elle représente sa capacité à toucher
+                        précisément les joueurs et à percer leurs esquives.
+                        Plus la Précision du boss est élevée, moins tes esquives ont de chances de fonctionner.
+                    </p>
+                    <div class="lex-scale">
+                        Affichage : <strong>+X%</strong> = bonus par rapport au niveau de base · Echelle 10 000 = 100%
+                    </div>
+                    <p class="lex-desc" style="margin-top:.5rem">
+                        La Précision <em>scale uniquement avec la difficulté</em> (niveau du monde ou donjon),
+                        pas avec le nombre de joueurs.
+                    </p>
+                    <div class="lex-example">
+                        <div class="lex-example-title">Exemple — Banakro</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 1</span>
+                            <span class="lex-example-val">Base (aucun bonus affiché)</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 2</span>
+                            <span class="lex-example-val val-atk">+52% de Précision</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 3</span>
+                            <span class="lex-example-val val-atk">+110% de Précision</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 4</span>
+                            <span class="lex-example-val val-atk">+240% de Précision</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blocage / Persévérance -->
+                <div class="lex-entry" id="block">
+                    <div class="lex-entry-header">
+                        <span class="lex-icon">🛡️</span>
+                        <div>
+                            <div class="lex-entry-name">Blocage / Persévérance</div>
+                            <span class="lex-entry-key">A_Block</span>
+                        </div>
+                    </div>
+                    <p class="lex-desc">
+                        Le Blocage (appelé <strong>Persévérance</strong> dans l'interface) est un stat
+                        <strong>offensif du boss</strong>. Il représente la capacité du boss à faire passer ses
+                        attaques <em>à travers tes blocages</em>. Plus cette valeur est haute, plus tes blocages
+                        ont de mal à fonctionner contre ce boss.
+                    </p>
+
+                    <div class="lex-info-box note" style="margin-bottom:.85rem">
+                        <strong>Comment fonctionne le blocage côté joueur ?</strong><br>
+                        Chaque coup reçu a une chance d'être "bloqué", ce qui réduit massivement les dégâts.
+                    </div>
+
+                    <div class="block-flow">
+                        <div class="block-step">
+                            <div class="block-step-num">1</div>
+                            <div class="block-step-text">
+                                Chance de blocage de <strong>base : 10%</strong> par défaut pour tout le monde
+                                <span style="color:#64b4ff;font-size:.78rem;margin-left:.4rem">(ga_default_block_rate = 1 000 / 10 000)</span>
+                            </div>
+                        </div>
+                        <div class="block-step">
+                            <div class="block-step-num">2</div>
+                            <div class="block-step-text">
+                                Chance maximale de blocage plafonnée à <strong>60%</strong> quoi qu'il arrive
+                                <span style="color:#64b4ff;font-size:.78rem;margin-left:.4rem">(ga_block_rate_max = 6 000 / 10 000)</span>
+                            </div>
+                        </div>
+                        <div class="block-step">
+                            <div class="block-step-num">3</div>
+                            <div class="block-step-text">
+                                Si le blocage se déclenche → <strong>95% des dégâts sont annulés</strong>
+                                <span style="color:#64b4ff;font-size:.78rem;margin-left:.4rem">(D_Block_DamRes_Rate = 9 500 / 10 000)</span>
+                            </div>
+                            <div class="block-step-result val-green">✓ Coup quasi-nul</div>
+                        </div>
+                    </div>
+
+                    <div class="lex-scale" style="margin-top:.85rem">
+                        Affichage dans la fiche boss : <strong>+X%</strong> = le boss a X% de Persévérance supplémentaire · Echelle 10 000 = 100%
+                    </div>
+
+                    <div class="lex-example" style="margin-top:.5rem">
+                        <div class="lex-example-title">Exemple — Banakro</div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 1</span>
+                            <span class="lex-example-val">Base (aucun bonus)</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 2</span>
+                            <span class="lex-example-val val-red">+121% de Persévérance</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 3</span>
+                            <span class="lex-example-val val-red">+246% de Persévérance</span>
+                        </div>
+                        <div class="lex-example-row">
+                            <span class="lex-example-label">Monde 4</span>
+                            <span class="lex-example-val val-red">+634% de Persévérance</span>
+                        </div>
+                    </div>
+
+                    <div class="lex-info-box warn" style="margin-top:.75rem">
+                        <strong>Ce que ça veut dire en pratique :</strong> à Monde 4, Banakro a une Persévérance
+                        ×7,34 fois plus élevée qu'à Monde 1. Ses attaques passent beaucoup plus facilement
+                        à travers tes blocages. La mécanique de blocage devient de moins en moins fiable
+                        aux niveaux élevés — construire son personnage pour encaisser ou esquiver est souvent
+                        plus efficace que de miser sur le blocage face à des boss de Monde 3/4.
+                    </div>
+                </div>
+
+            </div><!-- /lex-content -->
+        </div><!-- /lex-layout -->
+    </main>
+
+    <footer>
+        <p>7DS Database - Donnees extraites du jeu Seven Deadly Sins</p>
+        <p>Projet de documentation non-officiel</p>
+    </footer>
+
+    <script>
+    // Highlight active TOC link on scroll
+    document.addEventListener('DOMContentLoaded', () => {
+        const links = document.querySelectorAll('.lex-toc a');
+        const entries = [...document.querySelectorAll('.lex-entry[id]')];
+        const highlight = () => {
+            let current = '';
+            for (const e of entries) {
+                if (e.getBoundingClientRect().top <= 100) current = e.id;
+            }
+            links.forEach(l => {
+                l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+            });
+        };
+        window.addEventListener('scroll', highlight, { passive: true });
+        highlight();
+    });
+    </script>
+</body>
+</html>
