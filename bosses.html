@@ -236,8 +236,8 @@
 
         const DIFF_NAMES = { 1:'Facile', 2:'Normal', 3:'Difficile', 4:'Cauchemar', 5:'Infernal' };
 
-        // World level label (grades 2-5 → Monde 1-4)
-        const WORLD_GRADES = { 2:'Monde 1', 3:'Monde 2', 4:'Monde 3', 5:'Monde 4' };
+        // World level label (grades 1-4 = Monde 1-4 ; grades 5+ = futurs mondes)
+        const WORLD_GRADES = { 1:'Monde 1', 2:'Monde 2', 3:'Monde 3', 4:'Monde 4' };
 
         // ── State ──────────────────────────────────────────────────
         let _filter = '';
@@ -389,12 +389,12 @@
 
         function buildWorldLevels(boss) {
             if (!boss.diff_scaling) return '<p class="no-stats">Données de mise à l\'échelle non disponibles</p>';
-            // Only show grades where at least one of HP/ATK/DEF actually scales
-            const grades = Object.keys(boss.diff_scaling).map(Number).filter(g => {
-                if (g < 2) return false;
+            // Mondes 1-4 = grades 1-4. Include Monde 1 always (base stats), others if HP/ATK/DEF scale.
+            const grades = [1,2,3,4].filter(g => {
+                if (g === 1) return String(g) in boss.diff_scaling; // Monde 1 si grade existe
                 const sc = boss.diff_scaling[g];
                 return sc && (sc.hp_rate || sc.atk_rate || sc.def_rate);
-            }).sort();
+            });
             if (!grades.length) return '<p class="no-stats">Les stats ne varient pas selon le niveau du monde pour ce boss</p>';
             const btns = grades.map(g => {
                 const label = WORLD_GRADES[g] || ('Grade '+g);
@@ -503,10 +503,10 @@
                     </div>
                 </div>`;
             document.getElementById('boss-modal').classList.add('active');
-            // Auto-select first world level for field bosses, or first dungeon difficulty otherwise
+            // Auto-select Monde 1 for field bosses, or first dungeon difficulty otherwise
             if (boss.type === 'field' && boss.diff_scaling) {
-                const grades = Object.keys(boss.diff_scaling).map(Number).filter(g => g >= 2).sort();
-                if (grades.length) { _selectedWorldGrade = grades[0]; refreshModal(boss); }
+                _selectedWorldGrade = 1;
+                refreshModal(boss);
             } else if (boss.dungeons && boss.dungeons.length) {
                 _selectedDiff = boss.dungeons[0].difficulty;
                 refreshModal(boss);
