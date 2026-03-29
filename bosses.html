@@ -88,7 +88,7 @@
         .scale-players { color:var(--primary-color); font-weight:700; }
         .scale-hp { color:#ff7070; }
         .scale-atk { color:#ffaa44; }
-        .scale-def { color:#64b4ff; }
+        .scale-res { color:#88ddaa; }
         .scale-cur { background:rgba(230,194,122,0.06); }
 
         /* Elements */
@@ -137,6 +137,7 @@
         .sc-val { font-weight:700; }
         .acc-val   { color:#ffaa44; }
         .block-val { color:#64b4ff; }
+        .sc-val.def-val { color:#64b4ff; }
 
         /* Keys badge */
         .boss-keys { font-size:.72rem; padding:.15rem .45rem; border-radius:6px; background:rgba(255,180,50,0.2); color:#ffcc66; border:1px solid rgba(255,180,50,0.35); }
@@ -328,26 +329,30 @@
                 }
             }
 
-            // Show acc/block scaling if non-trivial (different from x1.0)
+            // DEF scales with difficulty but not party count — show in combat row
+            const showDef   = dm.def   > 1.001;
             const showAcc   = dm.acc   > 1.001 || dm.block > 1.001;
+            const showExtra = showDef || showAcc;
+            const defVal    = showDef  ? Math.round(s.def * dm.def).toLocaleString('fr-FR') : null;
             const accPct    = dm.acc   > 1 ? `+${((dm.acc-1)*100).toFixed(0)}%`   : '—';
             const blockPct  = dm.block > 1 ? `+${((dm.block-1)*100).toFixed(0)}%` : '—';
-            const combatExtra = showAcc
+            const combatExtra = showExtra
                 ? `<div class="scaling-combat-row">
-                    <span class="sc-label">Précision (dégâts)</span><span class="sc-val acc-val">${accPct}</span>
-                    <span class="sc-label" style="margin-left:1.2rem">Blocage</span><span class="sc-val block-val">${blockPct}</span>
+                    ${showDef  ? `<span class="sc-label">DEF</span><span class="sc-val def-val">${defVal}</span>` : ''}
+                    ${showAcc  ? `<span class="sc-label" style="${showDef?'margin-left:1.2rem':''}">Précision</span><span class="sc-val acc-val">${accPct}</span>
+                    <span class="sc-label" style="margin-left:1.2rem">Blocage</span><span class="sc-val block-val">${blockPct}</span>` : ''}
                    </div>`
                 : '';
 
             const rows = _party_scaling.map(p => {
                 const hp  = Math.round(scaledStat(s.hp,  p.hp_bonus)  * dm.hp).toLocaleString('fr-FR');
                 const atk = Math.round(scaledStat(s.atk, p.atk_bonus) * dm.atk).toLocaleString('fr-FR');
-                const def = Math.round(s.def * dm.def).toLocaleString('fr-FR');
+                const res = p.res_bonus > 0 ? `+${(p.res_bonus / 100).toFixed(0)}%` : '—';
                 return `<tr>
                     <td class="scale-players">${p.players}J</td>
                     <td class="scale-hp">${hp}</td>
                     <td class="scale-atk">${atk}</td>
-                    <td class="scale-def">${def}</td>
+                    <td class="scale-res">${res}</td>
                 </tr>`;
             }).join('');
             return `<div class="scaling-header">
@@ -357,7 +362,7 @@
             ${combatExtra}
             <table class="scaling-table">
                 <thead><tr>
-                    <th>Joueurs</th><th>HP</th><th>ATK</th><th>DEF</th>
+                    <th>Joueurs</th><th>HP</th><th>ATK</th><th title="Toutes les résistances élémentaires">Rés. él.</th>
                 </tr></thead>
                 <tbody>${rows}</tbody>
             </table>`;
