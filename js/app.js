@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initModal();
     initMonsterModal();
     initLootModal();
+    initLootModalWorldBtns();
     renderHome();
     renderPvp();
 
@@ -291,6 +292,43 @@ function initMonsterModal() {
             modal.classList.remove('active');
         }
     });
+
+    // World-level drop buttons (delegated — works after modal content is replaced)
+    modal.addEventListener('click', (e) => {
+        const btn = e.target.closest('.drop-world-btn');
+        if (!btn) return;
+        const lvIdx = parseInt(btn.dataset.lvl);
+        const container = btn.closest('.modal-section');
+        const tbl = container.querySelector('.drop-table');
+        const monster = GameDB.getMonster(container.closest('#monster-modal-body').dataset.monsterId);
+        if (!monster || !tbl) return;
+
+        // Update active button
+        btn.closest('.drop-world-btns').querySelectorAll('.drop-world-btn')
+            .forEach(b => b.classList.toggle('active', b === btn));
+
+        // Rebuild rows for selected level
+        const rows = monster.drops.map(d => {
+            const rate = d.rates ? d.rates[lvIdx] : d.rate_pct;
+            if (!rate) return '';
+            const icon = d.type === 'Gold'
+                ? '<img src="data/pvp_icons/100000101.png" class="drop-item-icon" alt="Gold">'
+                : (d.icon ? '<img src="' + d.icon + '" class="drop-item-icon" alt="">' : '');
+            const lv  = d.levels && d.levels[lvIdx] ? d.levels[lvIdx] : null;
+            const qty = lv ? (lv.min === lv.max ? 'x' + lv.min : 'x' + lv.min + '–' + lv.max) : '';
+            return '<div class="drop-row">' +
+                '<span class="drop-name">' + icon + d.name + '</span>' +
+                '<span class="drop-rate">' + rate + '%</span>' +
+                '<span class="drop-qty">' + qty + '</span>' +
+                '</div>';
+        }).join('');
+
+        // Replace rows (keep header)
+        const header = tbl.querySelector('.drop-header');
+        tbl.innerHTML = '';
+        tbl.appendChild(header);
+        tbl.insertAdjacentHTML('beforeend', rows);
+    });
 }
 
 const BUFF_NAMES = {
@@ -348,6 +386,7 @@ function showMonsterModal(monsterId) {
 
     const modal = document.getElementById('monster-modal');
     const body = document.getElementById('monster-modal-body');
+    body.dataset.monsterId = monsterId;
 
     const displayName = monster.name;
 
@@ -435,29 +474,51 @@ function showMonsterModal(monsterId) {
             </details>
 
             ${monster.drops && monster.drops.length > 0 ? (() => {
-                const maxLvl = Math.max(...monster.drops.map(d => d.levels ? d.levels.length : 1));
-                const qtyStr = (d, i) => {
-                    if (!d.levels || i >= d.levels.length) return '<span class="drop-lvl-empty">—</span>';
-                    const lv = d.levels[i];
-                    const q = lv.min === lv.max ? lv.min : lv.min + '–' + lv.max;
-                    return '<span class="drop-lvl">' + q + '</span>';
-                };
-                const hdrs = Array.from({length: maxLvl}, (_, i) =>
-                    '<span class="drop-hdr-lvl">N' + (i+1) + '</span>').join('');
+                const hasRates = monster.drops.some(d => d.rates && d.rates.length === 4);
+                const mId = monster.id;
+
+                if (hasRates) {
+                    const btnId  = 'drop-lvl-btn-' + mId;
+                    const tblId  = 'drop-tbl-' + mId;
+                    const btns = [1,2,3,4].map(n =>
+                        '<button class="drop-world-btn' + (n===1?' active':'') + '" data-lvl="' + (n-1) + '">' +
+                        'Monde ' + n + '</button>'
+                    ).join('');
+
+                    const buildRows = (lvIdx) => monster.drops.map(d => {
+                        const rate = d.rates ? d.rates[lvIdx] : d.rate_pct;
+                        if (!rate) return '';
+                        const icon = d.type === 'Gold'
+                            ? '<img src="data/pvp_icons/100000101.png" class="drop-item-icon" alt="Gold">'
+                            : (d.icon ? '<img src="' + d.icon + '" class="drop-item-icon" alt="">' : '');
+                        const lv  = d.levels && d.levels[lvIdx] ? d.levels[lvIdx] : null;
+                        const qty = lv ? (lv.min === lv.max ? 'x' + lv.min : 'x' + lv.min + '–' + lv.max) : '';
+                        return '<div class="drop-row">' +
+                            '<span class="drop-name">' + icon + d.name + '</span>' +
+                            '<span class="drop-rate">' + rate + '%</span>' +
+                            '<span class="drop-qty">' + qty + '</span>' +
+                            '</div>';
+                    }).join('');
+
+                    return '<div class="modal-section"><h3>Butin (' + monster.drops.length + ' items)</h3>' +
+                        '<div class="drop-world-btns" id="' + btnId + '">' + btns + '</div>' +
+                        '<div class="drop-table" id="' + tblId + '">' +
+                        '<div class="drop-header"><span class="drop-name"></span>' +
+                        '<span class="drop-rate">Taux</span><span class="drop-qty">Qté</span></div>' +
+                        buildRows(0) + '</div></div>';
+                }
+
+                // Fallback for drops without per-level rates
                 const rows = monster.drops.map(d => {
                     const icon = d.type === 'Gold'
                         ? '<img src="data/pvp_icons/100000101.png" class="drop-item-icon" alt="Gold">'
                         : (d.icon ? '<img src="' + d.icon + '" class="drop-item-icon" alt="">' : '');
-                    return '<div class="drop-row">' +
-                    '<span class="drop-name">' + icon + d.name + '</span>' +
-                    '<span class="drop-rate">' + d.rate_pct + '%</span>' +
-                    Array.from({length: maxLvl}, (_, i) => qtyStr(d, i)).join('') +
-                    '</div>';
+                    return '<div class="drop-row"><span class="drop-name">' + icon + d.name +
+                        '</span><span class="drop-rate">' + d.rate_pct + '%</span></div>';
                 }).join('');
                 return '<div class="modal-section"><h3>Butin (' + monster.drops.length + ' items)</h3>' +
-                    '<div class="drop-table">' +
-                    '<div class="drop-header"><span class="drop-name"></span><span class="drop-rate">Taux</span>' + hdrs + '</div>' +
-                    rows + '</div></div>';
+                    '<div class="drop-table"><div class="drop-header"><span class="drop-name"></span>' +
+                    '<span class="drop-rate">Taux</span></div>' + rows + '</div></div>';
             })() : ''}
 
             ${monster.catchable ? `
@@ -854,7 +915,24 @@ function renderPvp() {
 
 // ─── Loot Section ────────────────────────────────────────────────────────────
 
-let _lootIndex = null; // {item_tid -> {tid, name, icon, grade, type, sources:[{monster,rate_pct}]}}
+let _lootIndex = null;
+let _lootWorld = 3; // 0=monde1 … 3=monde4 (défaut: monde 4)
+
+function sourceEV(src, wi) {
+    const rate = src.rates ? src.rates[wi] : (wi === 0 ? src.rate_pct : 0);
+    const lv   = src.levels ? src.levels[wi] : null;
+    const qty  = lv ? (lv.min + lv.max) / 2 : 1;
+    return (rate / 100) * qty;
+}
+
+function sourceBestWorld(src) {
+    let best = 0, bestEV = -1;
+    for (let i = 0; i < 4; i++) {
+        const ev = sourceEV(src, i);
+        if (ev > bestEV) { bestEV = ev; best = i; }
+    }
+    return best;
+}
 
 function buildLootIndex() {
     if (_lootIndex) return _lootIndex;
@@ -866,28 +944,20 @@ function buildLootIndex() {
             const tid = drop.item_tid;
             if (!tid) return;
             if (!index[tid]) {
-                index[tid] = {
-                    tid,
-                    name: drop.name,
-                    icon: drop.icon || null,
-                    grade: drop.grade || '',
-                    type: drop.type || 'Item',
-                    sources: []
-                };
+                index[tid] = { tid, name: drop.name, icon: drop.icon || null,
+                               grade: drop.grade || '', type: drop.type || 'Item', sources: [] };
             }
             index[tid].sources.push({
-                monster_id: mon.id,
+                monster_id:   mon.id,
                 monster_name: mon.name,
                 monster_icon: mon.icon || null,
                 monster_tribe: mon.tribe,
                 monster_grade: mon.grade,
-                rate_pct: drop.rate_pct
+                rate_pct: drop.rate_pct,
+                rates:  drop.rates  || null,
+                levels: drop.levels || null,
             });
         });
-    });
-    // Sort sources by rate desc for each item
-    Object.values(index).forEach(item => {
-        item.sources.sort((a, b) => b.rate_pct - a.rate_pct);
     });
     _lootIndex = index;
     return index;
@@ -903,9 +973,26 @@ function renderLoot() {
         const types = [...new Set(items.map(i => i.type).filter(Boolean))].sort();
         types.forEach(t => {
             const opt = document.createElement('option');
-            opt.value = t;
-            opt.textContent = t;
+            opt.value = t; opt.textContent = t;
             typeSelect.appendChild(opt);
+        });
+    }
+
+    // World selector (inject once)
+    if (!document.getElementById('loot-world-btns')) {
+        const wrap = document.createElement('div');
+        wrap.id = 'loot-world-btns';
+        wrap.className = 'drop-world-btns loot-world-btns';
+        wrap.innerHTML = [1,2,3,4].map((n, i) =>
+            `<button class="drop-world-btn${i === _lootWorld ? ' active' : ''}" data-wi="${i}">Monde ${n}</button>`
+        ).join('');
+        document.getElementById('loot').querySelector('.filters').after(wrap);
+        wrap.addEventListener('click', e => {
+            const btn = e.target.closest('.drop-world-btn');
+            if (!btn) return;
+            _lootWorld = parseInt(btn.dataset.wi);
+            wrap.querySelectorAll('.drop-world-btn').forEach(b => b.classList.toggle('active', b === btn));
+            applyLootFilters();
         });
     }
 
@@ -919,8 +1006,9 @@ function renderLoot() {
 function applyLootFilters() {
     const index = buildLootIndex();
     const search = (document.getElementById('search-loot').value || '').toLowerCase();
-    const grade = document.getElementById('filter-loot-grade').value;
-    const type = document.getElementById('filter-loot-type').value;
+    const grade  = document.getElementById('filter-loot-grade').value;
+    const type   = document.getElementById('filter-loot-type').value;
+    const wi     = _lootWorld;
 
     const items = Object.values(index).filter(item => {
         if (search && !item.name.toLowerCase().includes(search)) return false;
@@ -929,22 +1017,78 @@ function applyLootFilters() {
         return true;
     });
 
-    // Sort: grade desc then name
+    // Best rate across all sources at selected world
+    items.forEach(item => {
+        item._bestEV  = Math.max(...item.sources.map(s => sourceEV(s, wi)));
+        item._bestRate = Math.max(...item.sources.map(s => s.rates ? s.rates[wi] : (wi===0 ? s.rate_pct : 0)));
+        item._overallBestWorld = (() => {
+            let best = 0, bestEV = -1;
+            for (let i = 0; i < 4; i++) {
+                const ev = Math.max(...item.sources.map(s => sourceEV(s, i)));
+                if (ev > bestEV) { bestEV = ev; best = i; }
+            }
+            return best;
+        })();
+    });
+
     const gradeOrder = {'grade4':4,'grade3':3,'grade2':2,'grade1':1,'':0};
     items.sort((a, b) => (gradeOrder[b.grade]||0) - (gradeOrder[a.grade]||0) || a.name.localeCompare(b.name));
 
     document.getElementById('loot-count-display').textContent = items.length;
 
     const grid = document.getElementById('loot-list');
-    grid.innerHTML = items.map(item => `
+    grid.innerHTML = items.map(item => {
+        const rateStr = item._bestRate > 0 ? item._bestRate + '%' : '—';
+        const bestEVoverall = Math.max(...[0,1,2,3].map(i => Math.max(...item.sources.map(s => sourceEV(s, i)))));
+        const bestBadge = item._overallBestWorld !== wi && bestEVoverall > item._bestEV
+            ? `<div class="loot-best-badge" title="Meilleur EV en Monde ${item._overallBestWorld+1}">★M${item._overallBestWorld+1}</div>`
+            : '';
+        return `
         <div class="loot-card loot-${item.grade}" onclick="showItemSources('${item.tid}')">
             ${item.icon
                 ? `<img src="${item.icon}" alt="${item.name}" class="loot-icon">`
                 : `<div class="loot-icon loot-icon-placeholder"></div>`}
             <div class="loot-name">${item.name}</div>
-            <div class="loot-sources-count">${item.sources.length} source${item.sources.length > 1 ? 's' : ''}</div>
-        </div>
-    `).join('');
+            <div class="loot-card-footer">
+                <span class="loot-sources-count">${item.sources.length} source${item.sources.length>1?'s':''}</span>
+                <span class="loot-card-rate">${rateStr}</span>
+                ${bestBadge}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function buildSourceRows(item, wi) {
+    const sorted = [...item.sources].sort((a, b) => sourceEV(b, wi) - sourceEV(a, wi));
+    return sorted.map((src, i) => {
+        const rate    = src.rates  ? src.rates[wi]  : (wi === 0 ? src.rate_pct : 0);
+        const lv      = src.levels ? src.levels[wi] : null;
+        const qty     = lv ? (lv.min === lv.max ? 'x' + lv.min : 'x' + lv.min + '–' + lv.max) : '';
+        const ev      = sourceEV(src, wi);
+        const bestWi   = sourceBestWorld(src);
+        const bestEVsrc = sourceEV(src, bestWi);
+        const curEVsrc  = sourceEV(src, wi);
+        const badge = bestWi !== wi && bestEVsrc > curEVsrc
+            ? `<span class="loot-best-badge" title="Meilleur EV en Monde ${bestWi+1}">★M${bestWi+1}</span>`
+            : '';
+        if (!rate) return '';
+        return `
+            <div class="loot-source-row" onclick="showMonsterModal('${src.monster_id}')">
+                <span class="loot-source-rank">#${i+1}</span>
+                ${src.monster_icon
+                    ? `<img src="${src.monster_icon}" alt="${src.monster_name}" class="loot-source-icon">`
+                    : `<div class="loot-source-icon loot-icon-placeholder"></div>`}
+                <div class="loot-source-info">
+                    <div class="loot-source-name">${src.monster_name}</div>
+                    <div class="loot-source-meta">${formatTribeName(src.monster_tribe) || '—'} · ${src.monster_grade || 'Normal'}</div>
+                </div>
+                <div class="loot-source-stats">
+                    <span class="loot-source-rate">${rate}%</span>
+                    <span class="loot-source-qty">${qty}</span>
+                    ${badge}
+                </div>
+            </div>`;
+    }).join('');
 }
 
 function showItemSources(tid) {
@@ -953,41 +1097,52 @@ function showItemSources(tid) {
     if (!item) return;
 
     const modal = document.getElementById('loot-modal');
-    const body = document.getElementById('loot-modal-body');
+    const body  = document.getElementById('loot-modal-body');
+    body.dataset.tid = tid;
 
     const gradeColors = {'grade4':'#b87fff','grade3':'#4fc3f7','grade2':'#81c784','grade1':'#aaa'};
     const itemColor = gradeColors[item.grade] || '#eaeaea';
 
+    const worldBtns = [1,2,3,4].map((n, i) =>
+        `<button class="drop-world-btn${i === _lootWorld ? ' active' : ''}" data-wi="${i}">Monde ${n}</button>`
+    ).join('');
+
     body.innerHTML = `
-        <div class="modal-header" style="background: linear-gradient(135deg, #1a2a1a, #2a3a2a); min-height:140px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; gap:0.5rem; padding-bottom:1.5rem;">
-            ${item.icon ? `<img src="${item.icon}" alt="${item.name}" style="height:80px; object-fit:contain; image-rendering:pixelated; position:relative; z-index:1;">` : ''}
-            <h2 style="position:relative; z-index:1; color:${itemColor};">${item.name}</h2>
-            <p style="position:relative; z-index:1; color:#888;">${item.type} · ${item.grade || 'N/A'}</p>
+        <div class="modal-header" style="background:linear-gradient(135deg,#1a2a1a,#2a3a2a);min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:0.5rem;padding-bottom:1.5rem;">
+            ${item.icon ? `<img src="${item.icon}" alt="${item.name}" style="height:80px;object-fit:contain;image-rendering:pixelated;">` : ''}
+            <h2 style="color:${itemColor};">${item.name}</h2>
+            <p style="color:#888;">${item.type} · ${item.grade || 'N/A'}</p>
         </div>
         <div class="modal-body">
             <div class="modal-section">
-                <h3>Sources (${item.sources.length})</h3>
-                <p style="color:#888; font-size:0.85rem; margin-bottom:1rem;">Trié par taux de drop décroissant</p>
-                <div class="loot-sources-list">
-                    ${item.sources.map((src, i) => `
-                        <div class="loot-source-row" onclick="showMonsterModal('${src.monster_id}')">
-                            <span class="loot-source-rank">#${i+1}</span>
-                            ${src.monster_icon
-                                ? `<img src="${src.monster_icon}" alt="${src.monster_name}" class="loot-source-icon">`
-                                : `<div class="loot-source-icon loot-icon-placeholder"></div>`}
-                            <div class="loot-source-info">
-                                <div class="loot-source-name">${src.monster_name}</div>
-                                <div class="loot-source-meta">${formatTribeName(src.monster_tribe) || '—'} · ${src.monster_grade || 'Normal'}</div>
-                            </div>
-                            <div class="loot-source-rate">${src.rate_pct}%</div>
-                        </div>
-                    `).join('')}
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">
+                    <h3 style="margin:0;">Sources (${item.sources.length})</h3>
+                    <div class="drop-world-btns" id="loot-modal-world-btns" style="margin:0;">${worldBtns}</div>
+                </div>
+                <div class="loot-sources-list" id="loot-modal-sources">
+                    ${buildSourceRows(item, _lootWorld)}
                 </div>
             </div>
-        </div>
-    `;
+        </div>`;
 
     modal.classList.add('active');
+}
+
+function initLootModalWorldBtns() {
+    document.getElementById('loot-modal').addEventListener('click', e => {
+        const btn = e.target.closest('#loot-modal-world-btns .drop-world-btn');
+        if (!btn) return;
+        const wi  = parseInt(btn.dataset.wi);
+        _lootWorld = wi;
+        // Sync global loot world buttons
+        document.querySelectorAll('#loot-world-btns .drop-world-btn')
+            .forEach(b => b.classList.toggle('active', parseInt(b.dataset.wi) === wi));
+        btn.closest('.drop-world-btns').querySelectorAll('.drop-world-btn')
+            .forEach(b => b.classList.toggle('active', b === btn));
+        const tid = document.getElementById('loot-modal-body').dataset.tid;
+        const item = buildLootIndex()[tid];
+        document.getElementById('loot-modal-sources').innerHTML = buildSourceRows(item, wi);
+    });
 }
 
 function initLootModal() {

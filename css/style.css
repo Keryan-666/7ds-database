@@ -1163,6 +1163,16 @@ footer p {
     font-weight: 700;
     color: #7dffb0;
     flex-shrink: 0;
+    margin-left: auto;
+}
+
+.drop-qty {
+    min-width: 3.2rem;
+    text-align: right;
+    color: #aad4ff;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-left: 1.2rem;
 }
 
 .drop-hdr-lvl {
@@ -1177,6 +1187,36 @@ footer p {
     color: #aad4ff;
     font-weight: 600;
     flex-shrink: 0;
+}
+
+.drop-world-btns {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.drop-world-btn {
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.drop-world-btn:hover {
+    background: rgba(255,255,255,0.12);
+    color: var(--text-light);
+}
+
+.drop-world-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
 }
 
 .drop-lvl-empty {
@@ -1410,6 +1450,58 @@ footer p {
     color: var(--text-muted);
 }
 
+.loot-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.loot-card-rate {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #7dffb0;
+}
+
+.loot-best-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #ffd700;
+    background: rgba(255,215,0,0.12);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 10px;
+    padding: 0.1rem 0.4rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.loot-best-here {
+    color: #7dffb0;
+    background: rgba(125,255,176,0.1);
+    border-color: rgba(125,255,176,0.3);
+}
+
+.loot-world-btns {
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.loot-source-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.loot-source-qty {
+    font-size: 0.85rem;
+    color: #aad4ff;
+    font-weight: 600;
+    min-width: 2.5rem;
+    text-align: right;
+}
+
 /* Loot modal sources list */
 .loot-sources-list {
     display: flex;
@@ -1467,12 +1559,10 @@ footer p {
 }
 
 .loot-source-rate {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: bold;
     color: #ffd700;
-    min-width: 50px;
-    text-align: right;
-    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 /* Home Navigation Grid */

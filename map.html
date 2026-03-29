@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/site.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -249,15 +250,15 @@
 </header>
 <nav>
     <ul>
-        <li><a href="index.html">Accueil</a></li>
-        <li><a href="index.html?section=characters">Personnages</a></li>
-        <li><a href="index.html?section=monsters">Monstres</a></li>
-        <li><a href="index.html?section=pvp">PvP</a></li>
-        <li><a href="index.html?section=loot">Loot</a></li>
-        <li><a href="passifs.html">Passifs</a></li>
-        <li><a href="capture.html">Capture</a></li>
-        <li><a href="cuisine.html">Cuisine</a></li>
-        <li><a href="map.html" class="active">Carte</a></li>
+        <li><a href="index.html"                    data-i18n="ui.nav.home">Accueil</a></li>
+        <li><a href="index.html?section=characters" data-i18n="ui.nav.characters">Personnages</a></li>
+        <li><a href="index.html?section=monsters"   data-i18n="ui.nav.monsters">Monstres</a></li>
+        <li><a href="index.html?section=pvp"        data-i18n="ui.nav.pvp">PvP</a></li>
+        <li><a href="index.html?section=loot"       data-i18n="ui.nav.loot">Loot</a></li>
+        <li><a href="passifs.html"                  data-i18n="ui.nav.passives">Passifs</a></li>
+        <li><a href="capture.html"                  data-i18n="ui.nav.capture">Capture</a></li>
+        <li><a href="cuisine.html"                  data-i18n="ui.nav.cooking">Cuisine</a></li>
+        <li><a href="map.html" class="active"       data-i18n="ui.nav.map">Carte</a></li>
     </ul>
 </nav>
 
@@ -296,21 +297,35 @@ const map = L.map('map', {
 
 const bounds = [[0, 0], [MAP_H, MAP_W]];
 
-// ── Tuiles : 324 imageOverlay positionnés précisément ────────────
-// CRS.Simple : [lat=y, lng=x], row 0 de l'image = haut = lat max
-for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
-        const latMin = MAP_H - (row + 1) * TILE_SIZE;
-        const latMax = MAP_H - row * TILE_SIZE;
-        const lngMin = col * TILE_SIZE;
-        const lngMax = (col + 1) * TILE_SIZE;
-        L.imageOverlay(
-            `data/map_tiles/${col}_${row}.png`,
-            [[latMin, lngMin], [latMax, lngMax]]
-        ).addTo(map);
+// ── Tuiles : lazy loading par viewport ───────────────────────────
+// Seules les tuiles visibles (+ marge 50%) sont créées, par lots de 10/frame.
+const tilesAdded = {}; // "col_row" → L.imageOverlay
+
+function refreshTiles() {
+    const vb = map.getBounds().pad(0.5);
+    const toAdd = [];
+    for (let row = 0; row < GRID_ROWS; row++) {
+        for (let col = 0; col < GRID_COLS; col++) {
+            const key = `${col}_${row}`;
+            if (tilesAdded[key]) continue;
+            const latMin = MAP_H - (row + 1) * TILE_SIZE;
+            const latMax = MAP_H - row * TILE_SIZE;
+            const tb = L.latLngBounds([[latMin, col * TILE_SIZE], [latMax, (col + 1) * TILE_SIZE]]);
+            if (vb.overlaps(tb)) toAdd.push({ key, tb });
+        }
     }
+    function addBatch(i) {
+        const end = Math.min(i + 10, toAdd.length);
+        for (let j = i; j < end; j++) {
+            const { key, tb } = toAdd[j];
+            tilesAdded[key] = L.imageOverlay(`data/map_tiles/${key}.png`, tb, { interactive: false }).addTo(map);
+        }
+        if (end < toAdd.length) requestAnimationFrame(() => addBatch(end));
+    }
+    if (toAdd.length) addBatch(0);
 }
 
+map.on('moveend zoomend', refreshTiles);
 map.fitBounds(bounds);
 
 // ── Conversion coordonnées jeu → pixel ───────────────────────────
@@ -755,11 +770,6 @@ map.on('contextmenu', (e) => {
     addMarker(e.latlng, name, px, py);
 });
 
-map.on('click', (e) => {
-    const px = Math.round(e.latlng.lng);
-    const py = Math.round(MAP_H - e.latlng.lat);
-    console.log(`Clic px: ${px}, ${py}  |  latlng: ${e.latlng.lat.toFixed(1)}, ${e.latlng.lng.toFixed(1)}`);
-});
 
 function addMarker(latlng, name, px, py) {
     const m = L.marker(latlng).addTo(map);
